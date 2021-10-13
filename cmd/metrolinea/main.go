@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/shoriwe/metrolinea/internal/api"
-	"github.com/shoriwe/metrolinea/internal/database"
+	"github.com/shoriwe/metrolinea/internal/data"
 	"log"
 	"net/http"
 )
 
 func main() {
-	setupError := database.Setup(database.Settings{})
+	setupError := data.Setup(data.Settings{})
 	if setupError != nil {
 		log.Fatal(setupError)
 	}

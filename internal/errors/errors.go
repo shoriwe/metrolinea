@@ -3,11 +3,11 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"github.com/shoriwe/metrolinea/internal/database/db_objects"
+	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 )
 
 func CookieGenerationError(userInformation db_objects.UserInformation) error {
-	return errors.New(fmt.Sprintf("Cookie generation error for: %v", userInformation))
+	return errors.New(fmt.Sprintf("Cookies generation error for: %v", userInformation))
 }
 
 func GoRuntimeError(err error, remoteAddress, method, uri string) error {

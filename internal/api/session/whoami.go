@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func Login(responseWriter http.ResponseWriter, request *http.Request) {
+func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		go data.LogError(errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
 		_, writeError := responseWriter.Write(messages.MethodsAllowed(http.MethodPost))
@@ -44,8 +44,8 @@ func Login(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	var loginForm forms.LoginForm
-	unmarshalError := json.Unmarshal(body, &loginForm)
+	var whoamiForm forms.WhoamiForm
+	unmarshalError := json.Unmarshal(body, &whoamiForm)
 	if unmarshalError != nil {
 		go data.LogError(errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -56,9 +56,9 @@ func Login(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	cookies, loginSuccess, loginError := data.Login(loginForm.Username, loginForm.Password)
-	if loginError != nil {
-		go data.LogError(errors.GoRuntimeError(loginError, request.RemoteAddr, request.Method, request.RequestURI))
+	whoami, authSuccess, whoamiError := data.Whoami(whoamiForm.Cookies)
+	if whoamiError != nil {
+		go data.LogError(errors.GoRuntimeError(whoamiError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 		if writeError != nil {
@@ -67,13 +67,18 @@ func Login(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	if !loginSuccess {
+	if !authSuccess {
 		responseWriter.WriteHeader(http.StatusForbidden)
 		return
 	}
 	response, responseMarshalError := json.Marshal(
-		forms.LoginResponse{
-			Cookies: cookies,
+		forms.WhoamiResponse{
+			Id:        whoami.UserId,
+			Kind:      whoami.Kind,
+			Username:  whoami.Username,
+			Name:      whoami.Name,
+			BirthDate: whoami.BirthDate,
+			Number:    whoami.CardNumber,
 		},
 	)
 	if responseMarshalError != nil {

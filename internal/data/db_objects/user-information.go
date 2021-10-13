@@ -26,3 +26,12 @@ type MetrolineaCardInformation struct {
 	Id     uint
 	Number string
 }
+
+type Whoami struct {
+	UserId     uint
+	Kind       uint
+	Username   string
+	Name       string
+	BirthDate  time.Time
+	CardNumber string
+}

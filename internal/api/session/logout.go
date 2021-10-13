@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func Login(responseWriter http.ResponseWriter, request *http.Request) {
+func Logout(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		go data.LogError(errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
 		_, writeError := responseWriter.Write(messages.MethodsAllowed(http.MethodPost))
@@ -44,8 +44,8 @@ func Login(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	var loginForm forms.LoginForm
-	unmarshalError := json.Unmarshal(body, &loginForm)
+	var logoutForm forms.LogoutForm
+	unmarshalError := json.Unmarshal(body, &logoutForm)
 	if unmarshalError != nil {
 		go data.LogError(errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -56,9 +56,9 @@ func Login(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	cookies, loginSuccess, loginError := data.Login(loginForm.Username, loginForm.Password)
-	if loginError != nil {
-		go data.LogError(errors.GoRuntimeError(loginError, request.RemoteAddr, request.Method, request.RequestURI))
+	logoutSuccess, logoutError := data.Logout(logoutForm.Cookies)
+	if logoutError != nil {
+		go data.LogError(errors.GoRuntimeError(logoutError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 		if writeError != nil {
@@ -67,13 +67,13 @@ func Login(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	if !loginSuccess {
+	if !logoutSuccess {
 		responseWriter.WriteHeader(http.StatusForbidden)
 		return
 	}
 	response, responseMarshalError := json.Marshal(
-		forms.LoginResponse{
-			Cookies: cookies,
+		forms.LogoutResponse{
+			Succeed: true,
 		},
 	)
 	if responseMarshalError != nil {

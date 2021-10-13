@@ -10,4 +10,6 @@ var MetrolineaHandler = &http.ServeMux{}
 
 func init() {
 	MetrolineaHandler.HandleFunc("/login", session.Login)
+	MetrolineaHandler.HandleFunc("/logout", session.Logout)
+	MetrolineaHandler.HandleFunc("/whoami", session.Whoami)
 }
