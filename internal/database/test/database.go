@@ -3,10 +3,9 @@ package test
 import (
 	"crypto/rand"
 	"encoding/base32"
-	"fmt"
-	"log"
 	"github.com/shoriwe/metrolinea/internal/database/db_objects"
 	"github.com/shoriwe/metrolinea/internal/errors"
+	"log"
 	"time"
 )
 
@@ -17,11 +16,20 @@ func LogError(_ time.Time, err error) error {
 	return nil
 }
 
-func LogLoginAttempt(userInformation db_objects.UserInformation, succeed bool) error {
+func LogLoginAttempt(_ time.Time, userInformation db_objects.UserInformation, succeed bool) error {
 	if succeed {
-		fmt.Println("LOGIN SUCCEED FOR:", userInformation)
+		log.Println("LOGIN SUCCEED FOR:", userInformation)
 	} else {
-		fmt.Println("LOGIN FAILED FOR:", userInformation)
+		log.Println("LOGIN FAILED FOR:", userInformation)
+	}
+	return nil
+}
+
+func LogCookieGenerationAttempt(_ time.Time, userInformation db_objects.UserInformation, succeed bool) error {
+	if succeed {
+		log.Printf("COOKIE GENERATION FOR USER: %s <%d> SUCCEED\n", userInformation.Username, userInformation.Id)
+	} else {
+		log.Printf("COOKIE GENERATION FOR USER: %s <%d> FAILED\n", userInformation.Username, userInformation.Id)
 	}
 	return nil
 }
@@ -46,9 +54,19 @@ func GenerateCookie(userInformation db_objects.UserInformation) (string, error) 
 
 func Login(username, password string) (db_objects.UserInformation, bool, error) {
 	if username == "John" && password == "Connor" {
-		return db_objects.UserInformation{}, true, nil
+		return db_objects.UserInformation{
+			Id:           1,
+			Kind:         db_objects.Administrator,
+			Username:     "terminator",
+			PasswordHash: "",
+		}, true, nil
 	} else if username == "Marla" && password == "Singer" {
-		return db_objects.UserInformation{}, true, nil
+		return db_objects.UserInformation{
+			Id:           2,
+			Kind:         db_objects.User,
+			Username:     "mSinger",
+			PasswordHash: "",
+		}, true, nil
 	}
 	return db_objects.UserInformation{}, false, nil
 }

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log"
 	"github.com/shoriwe/metrolinea/internal/api"
 	"github.com/shoriwe/metrolinea/internal/database"
+	"log"
 	"net/http"
 )
 

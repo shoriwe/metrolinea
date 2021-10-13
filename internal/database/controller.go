@@ -1,8 +1,8 @@
 package database
 
 import (
-	"log"
 	"github.com/shoriwe/metrolinea/internal/database/db_objects"
+	"log"
 	"time"
 )
 
@@ -17,7 +17,14 @@ func LogError(err error) {
 }
 
 func LogLoginAttempt(userInformation db_objects.UserInformation, succeeded bool) {
-	logError := logLoginAttemptCallback(userInformation, succeeded)
+	logError := logLoginAttemptCallback(time.Now(), userInformation, succeeded)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
+
+func LogCookieGenerationAttempt(userInformation db_objects.UserInformation, succeed bool) {
+	logError := logCookieGenerationAttemptCallback(time.Now(), userInformation, succeed)
 	if logError != nil {
 		log.Println(logError)
 	}
@@ -30,10 +37,10 @@ func DisableCookie(cookie string) error {
 func GenerateCookie(userInformation db_objects.UserInformation) (string, error) {
 	cookie, cookieGenerationError := generateCookieCallback(userInformation)
 	if cookieGenerationError != nil {
-		// ToDo: Log that the cookie was not generated for userInformation
+		go LogCookieGenerationAttempt(userInformation, false)
 		return "", cookieGenerationError
 	}
-	// ToDo: Log that the cookie was successfully generated for userInformation
+	go LogCookieGenerationAttempt(userInformation, true)
 	return cookie, nil
 }
 

@@ -7,12 +7,13 @@ import (
 )
 
 var (
-	logLoginAttemptCallback func(userInformation db_objects.UserInformation, succeed bool) error
-	logErrorCallback        func(time time.Time, err error) error
-	disableCookieCallback   func(cookie string) error
-	generateCookieCallback  func(userInformation db_objects.UserInformation) (string, error)
-	checkCookiesCallback    func(cookie string) (db_objects.UserInformation, bool, error)
-	loginCallback           func(username, password string) (db_objects.UserInformation, bool, error)
+	logCookieGenerationAttemptCallback func(time time.Time, userInformation db_objects.UserInformation, succeed bool) error
+	logLoginAttemptCallback            func(time time.Time, userInformation db_objects.UserInformation, succeed bool) error
+	logErrorCallback                   func(time time.Time, err error) error
+	disableCookieCallback              func(cookie string) error
+	generateCookieCallback             func(userInformation db_objects.UserInformation) (string, error)
+	checkCookiesCallback               func(cookie string) (db_objects.UserInformation, bool, error)
+	loginCallback                      func(username, password string) (db_objects.UserInformation, bool, error)
 )
 
 type Settings struct {
@@ -24,6 +25,7 @@ func Setup(settings Settings) error {
 
 func TestSetup() {
 	logLoginAttemptCallback = test.LogLoginAttempt
+	logCookieGenerationAttemptCallback = test.LogCookieGenerationAttempt
 	generateCookieCallback = test.GenerateCookie
 	logErrorCallback = test.LogError
 	loginCallback = test.Login

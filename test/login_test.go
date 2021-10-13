@@ -3,9 +3,9 @@ package test
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"github.com/shoriwe/metrolinea/internal/api/forms"
 	content_types "github.com/shoriwe/metrolinea/internal/content-types"
+	"io"
 	"net/http"
 	"testing"
 )
