@@ -1,8 +1,8 @@
 package test
 
 import (
-	"metrolinea/internal/api"
-	"metrolinea/internal/database"
+	"github.com/shoriwe/metrolinea/internal/api"
+	"github.com/shoriwe/metrolinea/internal/database"
 	"net/http/httptest"
 )
 

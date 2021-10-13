@@ -1,8 +1,8 @@
 package api
 
 import (
-	"metrolinea/internal/api/session"
-	_ "metrolinea/internal/api/session"
+	"github.com/shoriwe/metrolinea/internal/api/session"
+	_ "github.com/shoriwe/metrolinea/internal/api/session"
 	"net/http"
 )
 

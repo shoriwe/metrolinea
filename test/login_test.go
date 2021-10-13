@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"metrolinea/internal/api/forms"
-	content_types "metrolinea/internal/content-types"
+	"github.com/shoriwe/metrolinea/internal/api/forms"
+	content_types "github.com/shoriwe/metrolinea/internal/content-types"
 	"net/http"
 	"testing"
 )

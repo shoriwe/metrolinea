@@ -3,11 +3,11 @@ package session
 import (
 	"encoding/json"
 	"io"
-	"metrolinea/internal/api/forms"
-	content_types "metrolinea/internal/content-types"
-	"metrolinea/internal/database"
-	"metrolinea/internal/errors"
-	"metrolinea/internal/messages"
+	"github.com/shoriwe/metrolinea/internal/api/forms"
+	content_types "github.com/shoriwe/metrolinea/internal/content-types"
+	"github.com/shoriwe/metrolinea/internal/database"
+	"github.com/shoriwe/metrolinea/internal/errors"
+	"github.com/shoriwe/metrolinea/internal/messages"
 	"net/http"
 )
 

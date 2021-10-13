@@ -2,7 +2,7 @@ package database
 
 import (
 	"log"
-	"metrolinea/internal/database/db_objects"
+	"github.com/shoriwe/metrolinea/internal/database/db_objects"
 	"time"
 )
 

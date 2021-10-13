@@ -1,8 +1,8 @@
 package database
 
 import (
-	"metrolinea/internal/database/db_objects"
-	"metrolinea/internal/database/test"
+	"github.com/shoriwe/metrolinea/internal/database/db_objects"
+	"github.com/shoriwe/metrolinea/internal/database/test"
 	"time"
 )
 

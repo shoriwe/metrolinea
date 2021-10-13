@@ -3,7 +3,7 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"metrolinea/internal/database/db_objects"
+	"github.com/shoriwe/metrolinea/internal/database/db_objects"
 )
 
 func CookieGenerationError(userInformation db_objects.UserInformation) error {

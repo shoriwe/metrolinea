@@ -5,8 +5,8 @@ import (
 	"encoding/base32"
 	"fmt"
 	"log"
-	"metrolinea/internal/database/db_objects"
-	"metrolinea/internal/errors"
+	"github.com/shoriwe/metrolinea/internal/database/db_objects"
+	"github.com/shoriwe/metrolinea/internal/errors"
 	"time"
 )
 
