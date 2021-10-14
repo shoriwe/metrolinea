@@ -16,12 +16,14 @@ type WhoamiForm struct {
 }
 
 type WhoamiResponse struct {
-	Id        uint
-	Kind      uint
-	Username  string
-	Name      string
-	BirthDate time.Time
-	Number    string
+	Id               uint
+	Kind             uint
+	Username         string
+	Name             string
+	BirthDate        time.Time
+	Number           string
+	Email            string
+	EmergencyContact string
 }
 
 type LogoutForm struct {

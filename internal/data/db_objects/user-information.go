@@ -19,6 +19,8 @@ type PersonInformation struct {
 	UserInformationId uint
 	MetrolineaCardId  uint
 	Name              string
+	Email             string
+	EmergencyContact  string
 	BirthDate         time.Time
 }
 
@@ -28,10 +30,12 @@ type MetrolineaCardInformation struct {
 }
 
 type Whoami struct {
-	UserId     uint
-	Kind       uint
-	Username   string
-	Name       string
-	BirthDate  time.Time
-	CardNumber string
+	UserId           uint
+	Kind             uint
+	Username         string
+	Name             string
+	BirthDate        time.Time
+	CardNumber       string
+	Email            string
+	EmergencyContact string
 }

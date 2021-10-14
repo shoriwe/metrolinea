@@ -1,4 +1,4 @@
-package session
+package account
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
+func Logout(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		go data.LogError(errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
 		_, writeError := responseWriter.Write(messages.MethodsAllowed(http.MethodPost))
@@ -44,8 +44,8 @@ func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	var whoamiForm forms.WhoamiForm
-	unmarshalError := json.Unmarshal(body, &whoamiForm)
+	var logoutForm forms.LogoutForm
+	unmarshalError := json.Unmarshal(body, &logoutForm)
 	if unmarshalError != nil {
 		go data.LogError(errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -56,9 +56,9 @@ func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	whoami, authSuccess, whoamiError := data.Whoami(whoamiForm.Cookies)
-	if whoamiError != nil {
-		go data.LogError(errors.GoRuntimeError(whoamiError, request.RemoteAddr, request.Method, request.RequestURI))
+	logoutSuccess, logoutError := data.Logout(logoutForm.Cookies)
+	if logoutError != nil {
+		go data.LogError(errors.GoRuntimeError(logoutError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 		if writeError != nil {
@@ -67,18 +67,13 @@ func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	if !authSuccess {
+	if !logoutSuccess {
 		responseWriter.WriteHeader(http.StatusForbidden)
 		return
 	}
 	response, responseMarshalError := json.Marshal(
-		forms.WhoamiResponse{
-			Id:        whoami.UserId,
-			Kind:      whoami.Kind,
-			Username:  whoami.Username,
-			Name:      whoami.Name,
-			BirthDate: whoami.BirthDate,
-			Number:    whoami.CardNumber,
+		forms.LogoutResponse{
+			Succeed: true,
 		},
 	)
 	if responseMarshalError != nil {

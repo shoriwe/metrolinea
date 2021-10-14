@@ -1,4 +1,4 @@
-package session
+package account
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func Logout(responseWriter http.ResponseWriter, request *http.Request) {
+func Login(responseWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		go data.LogError(errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
 		_, writeError := responseWriter.Write(messages.MethodsAllowed(http.MethodPost))
@@ -44,8 +44,8 @@ func Logout(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	var logoutForm forms.LogoutForm
-	unmarshalError := json.Unmarshal(body, &logoutForm)
+	var loginForm forms.LoginForm
+	unmarshalError := json.Unmarshal(body, &loginForm)
 	if unmarshalError != nil {
 		go data.LogError(errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -56,9 +56,9 @@ func Logout(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	logoutSuccess, logoutError := data.Logout(logoutForm.Cookies)
-	if logoutError != nil {
-		go data.LogError(errors.GoRuntimeError(logoutError, request.RemoteAddr, request.Method, request.RequestURI))
+	cookies, loginSuccess, loginError := data.Login(loginForm.Username, loginForm.Password)
+	if loginError != nil {
+		go data.LogError(errors.GoRuntimeError(loginError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 		if writeError != nil {
@@ -67,13 +67,13 @@ func Logout(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	if !logoutSuccess {
+	if !loginSuccess {
 		responseWriter.WriteHeader(http.StatusForbidden)
 		return
 	}
 	response, responseMarshalError := json.Marshal(
-		forms.LogoutResponse{
-			Succeed: true,
+		forms.LoginResponse{
+			Cookies: cookies,
 		},
 	)
 	if responseMarshalError != nil {

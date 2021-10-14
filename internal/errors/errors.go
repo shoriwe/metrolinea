@@ -6,7 +6,7 @@ import (
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 )
 
-func CookieGenerationError(userInformation db_objects.UserInformation) error {
+func CookieGenerationError(userInformation *db_objects.UserInformation) error {
 	return errors.New(fmt.Sprintf("Cookies generation error for: %v", userInformation))
 }
 
