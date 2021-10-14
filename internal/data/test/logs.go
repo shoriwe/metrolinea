@@ -20,11 +20,20 @@ func LogCheckCookies(_ time.Time, username string, exists bool) error {
 	return nil
 }
 
+func LogRegisterAttempt(_ time.Time, username, message string, succeed bool) error {
+	if succeed {
+		log.Printf("REGISTRATION FOR USER: %s SUCCEED\n", username)
+	} else {
+		log.Printf("REGISTRATION FOR USER: %s FAILED -> %s\n", username, message)
+	}
+	return nil
+}
+
 func LogUserExists(_ time.Time, username string, exists bool) error {
 	if exists {
-		log.Printf("USER: %s EXISTS\n", username)
+		log.Printf("LOGIN FOR USER: %s SUCCEED\n", username)
 	} else {
-		log.Printf("USER: %s DOES NOT EXISTS\n", username)
+		log.Printf("LOGIN FOR USER: %s FAILED\n", username)
 	}
 	return nil
 }

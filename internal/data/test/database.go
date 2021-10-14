@@ -1,52 +1,60 @@
 package test
 
 import (
+	"github.com/shoriwe/metrolinea/internal/api/forms"
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 	"time"
 )
 
-func Login(username, password string) (*db_objects.UserInformation, bool, error) {
-	if username == "John" && password == "Hasta la vista baby!" {
-		return &db_objects.UserInformation{
-			Id:           1,
-			Kind:         db_objects.Administrator,
-			Username:     "terminator",
-			PasswordHash: "",
-		}, true, nil
-	} else if username == "Marla" && password == "Tyler" {
-		return &db_objects.UserInformation{
-			Id:           2,
-			Kind:         db_objects.User,
-			Username:     "mSinger",
-			PasswordHash: "",
-		}, true, nil
+var (
+	lastUserId    uint = 2
+	usersDatabase      = map[string]*db_objects.UserInformation{
+		"terminator": {
+			Id:               1,
+			Kind:             db_objects.Administrator,
+			Username:         "terminator",
+			PasswordHash:     "Hasta la vista baby!",
+			Name:             "John Connor",
+			Email:            "jonny@skynet.corp",
+			EmergencyContact: "MOTHER_CELLPHONE_HERE",
+			BirthDate:        time.Time{},
+		},
+		"mSinger": {
+			Id:               2,
+			Kind:             db_objects.User,
+			Username:         "mSinger",
+			PasswordHash:     "The first rule of the fight club is...",
+			Name:             "Marla Singer",
+			Email:            "marla@paper.street",
+			EmergencyContact: "TYLER_PHONE_HERE",
+			BirthDate:        time.Time{},
+		},
 	}
-	return nil, false, nil
+)
+
+func Register(registrationForm *forms.RegisterForm) (bool, string, error) {
+	// ToDo: Do something to sanitize input
+	lastUserId++
+	usersDatabase[registrationForm.Username] = &db_objects.UserInformation{
+		Id:               lastUserId,
+		Kind:             db_objects.User,
+		Username:         registrationForm.Username,
+		PasswordHash:     registrationForm.Password,
+		Name:             registrationForm.Name,
+		Email:            registrationForm.Email,
+		EmergencyContact: registrationForm.EmergencyContact,
+		BirthDate:        registrationForm.BirthDate,
+	}
+	return true, "Successfully created user", nil
 }
 
-func Whoami(userInformation *db_objects.UserInformation) (*db_objects.Whoami, bool, error) {
-	if userInformation.Id == 1 { // John Connor
-		return &db_objects.Whoami{
-			UserId:           userInformation.Id,
-			Kind:             userInformation.Kind,
-			Username:         userInformation.Username,
-			Name:             "John Connor",
-			BirthDate:        time.Now(),
-			CardNumber:       "34252350",
-			Email:            "johnny@skynet.corp",
-			EmergencyContact: "55555555",
-		}, true, nil
-	} else if userInformation.Id == 2 { // Marla Singer
-		return &db_objects.Whoami{
-			UserId:           userInformation.Id,
-			Kind:             userInformation.Kind,
-			Username:         userInformation.Username,
-			Name:             "Marla Singer",
-			BirthDate:        time.Now(),
-			CardNumber:       "92378457",
-			Email:            "marla@paperstree.corp",
-			EmergencyContact: "55555555",
-		}, true, nil
+func Login(username, password string) (*db_objects.UserInformation, bool, error) {
+	userInformation, userFound := usersDatabase[username]
+	if !userFound {
+		return nil, false, nil
+	}
+	if userInformation.PasswordHash == password {
+		return userInformation, true, nil
 	}
 	return nil, false, nil
 }

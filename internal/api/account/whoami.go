@@ -56,9 +56,9 @@ func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
 		}
 		return
 	}
-	whoami, authSuccess, whoamiError := data.Whoami(whoamiForm.Cookies)
-	if whoamiError != nil {
-		go data.LogError(errors.GoRuntimeError(whoamiError, request.RemoteAddr, request.Method, request.RequestURI))
+	userInformation, authSuccess, checkError := data.CheckCookies(whoamiForm.Cookies)
+	if checkError != nil {
+		go data.LogError(errors.GoRuntimeError(checkError, request.RemoteAddr, request.Method, request.RequestURI))
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 		if writeError != nil {
@@ -73,14 +73,13 @@ func Whoami(responseWriter http.ResponseWriter, request *http.Request) {
 	}
 	response, responseMarshalError := json.Marshal(
 		forms.WhoamiResponse{
-			Id:               whoami.UserId,
-			Kind:             whoami.Kind,
-			Username:         whoami.Username,
-			Name:             whoami.Name,
-			BirthDate:        whoami.BirthDate,
-			Number:           whoami.CardNumber,
-			Email:            whoami.Email,
-			EmergencyContact: whoami.EmergencyContact,
+			Id:               userInformation.Id,
+			Kind:             userInformation.Kind,
+			Username:         userInformation.Username,
+			Name:             userInformation.Name,
+			BirthDate:        userInformation.BirthDate,
+			Email:            userInformation.Email,
+			EmergencyContact: userInformation.EmergencyContact,
 		},
 	)
 	if responseMarshalError != nil {

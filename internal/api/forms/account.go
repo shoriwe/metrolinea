@@ -2,6 +2,21 @@ package forms
 
 import "time"
 
+type RegisterForm struct {
+	Username         string
+	Password         string
+	Name             string
+	BirthDate        time.Time
+	CardNumber       string
+	Email            string
+	EmergencyContact string
+}
+
+type RegisterResponse struct {
+	Succeed bool
+	Message string
+}
+
 type LoginForm struct {
 	Username string
 	Password string

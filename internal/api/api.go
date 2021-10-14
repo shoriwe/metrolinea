@@ -13,5 +13,6 @@ func init() {
 	MetrolineaHandler.HandleFunc("/login", account.Login)
 	MetrolineaHandler.HandleFunc("/logout", account.Logout)
 	MetrolineaHandler.HandleFunc("/whoami", account.Whoami)
+	MetrolineaHandler.HandleFunc("/register", account.Register)
 	MetrolineaHandler.HandleFunc("/user/exists/", general.UserExists)
 }

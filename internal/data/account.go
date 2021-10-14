@@ -1,8 +1,6 @@
 package data
 
-import (
-	"github.com/shoriwe/metrolinea/internal/data/db_objects"
-)
+import "github.com/shoriwe/metrolinea/internal/api/forms"
 
 func Login(username, password string) (string, bool, error) {
 	userInformation, loginSuccess, loginError := loginCallback(username, password)
@@ -19,20 +17,23 @@ func Login(username, password string) (string, bool, error) {
 	return "", false, nil
 }
 
-func Whoami(cookies string) (*db_objects.Whoami, bool, error) {
-	userInformation, validCookies, cookieCheckError := CheckCookies(cookies)
-	if cookieCheckError != nil {
-		go LogWhoamiAttempt(cookies, false)
-		return nil, false, cookieCheckError
+func Register(registrationForm *forms.RegisterForm) (bool, string, error) {
+	doesAlreadyExists, checkError := CheckUserExists(registrationForm.Username)
+	if checkError != nil {
+		return false, "", checkError
 	}
-	if validCookies {
-		result, success, whoamiError := whoamiCallback(userInformation)
-		if whoamiError != nil {
-			return nil, false, whoamiError
-		}
-		go LogWhoamiAttempt(userInformation.Username, success)
-		return result, success, nil
+	if doesAlreadyExists {
+		return false, "Username already taken", nil
 	}
-	go LogWhoamiAttempt(cookies, false)
-	return nil, false, nil
+	success, message, registrationError := registerCallback(registrationForm)
+	if registrationError != nil {
+		go LogRegistrationAttempt(registrationForm.Username, message, false)
+		return false, "", registrationError
+	}
+	if success {
+		go LogRegistrationAttempt(registrationForm.Username, "", true)
+		return true, message, nil
+	}
+	go LogRegistrationAttempt(registrationForm.Username, message, false)
+	return false, message, nil
 }

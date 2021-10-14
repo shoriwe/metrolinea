@@ -44,8 +44,8 @@ func LogLogoutAttempt(usernameOrCookies string, succeeded bool) {
 	}
 }
 
-func LogWhoamiAttempt(usernameOrCookies string, succeed bool) {
-	logError := logWhoamiAttemptCallback(time.Now(), usernameOrCookies, succeed)
+func LogRegistrationAttempt(username, message string, succeed bool) {
+	logError := logRegisterAttemptCallback(time.Now(), username, message, succeed)
 	if logError != nil {
 		log.Println(logError)
 	}
