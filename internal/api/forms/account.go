@@ -3,13 +3,11 @@ package forms
 import "time"
 
 type RegisterForm struct {
-	Username         string
-	Password         string
-	Name             string
-	BirthDate        time.Time
-	CardNumber       string
-	Email            string
-	EmergencyContact string
+	Username  string
+	Password  string
+	Name      string
+	BirthDate time.Time
+	Email     string
 }
 
 type RegisterResponse struct {
@@ -31,14 +29,12 @@ type WhoamiForm struct {
 }
 
 type WhoamiResponse struct {
-	Id               uint
-	Kind             uint
-	Username         string
-	Name             string
-	BirthDate        time.Time
-	Number           string
-	Email            string
-	EmergencyContact string
+	Id        uint
+	Kind      uint
+	Username  string
+	Name      string
+	BirthDate time.Time
+	Email     string
 }
 
 type LogoutForm struct {
@@ -55,21 +51,10 @@ type UpdatePasswordForm struct {
 	NewPassword string
 }
 
-type UpdateEmail struct {
+type UpdateEmailForm struct {
 	Cookies  string
 	NewEmail string
 	Password string
-}
-
-type UpdateEmergencyContact struct {
-	Cookies             string
-	NewEmergencyContact string
-	Password            string
-}
-
-type UpdateCard struct {
-	Cookies string
-	NewCard string
 }
 
 type UpdateResponse struct {

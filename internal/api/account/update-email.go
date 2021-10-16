@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func Whoami(controller *data.Controller) http.HandlerFunc {
+func UpdateEmail(controller *data.Controller) http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodPost {
 			go controller.LogError(request, errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
@@ -45,8 +45,8 @@ func Whoami(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		var whoamiForm forms.WhoamiForm
-		unmarshalError := json.Unmarshal(body, &whoamiForm)
+		var updateEmailForm forms.UpdateEmailForm
+		unmarshalError := json.Unmarshal(body, &updateEmailForm)
 		if unmarshalError != nil {
 			go controller.LogError(request, errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -57,9 +57,9 @@ func Whoami(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		userInformation, authSuccess, checkError := controller.CheckCookies(request, whoamiForm.Cookies)
-		if checkError != nil {
-			go controller.LogError(request, errors.GoRuntimeError(checkError, request.RemoteAddr, request.Method, request.RequestURI))
+		succeed, message, updateError := controller.UpdateEmail(request, updateEmailForm.Cookies, updateEmailForm.Password, updateEmailForm.NewEmail)
+		if updateError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(updateError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
 			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 			if writeError != nil {
@@ -68,18 +68,10 @@ func Whoami(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		if !authSuccess {
-			responseWriter.WriteHeader(http.StatusForbidden)
-			return
-		}
 		response, responseMarshalError := json.Marshal(
-			forms.WhoamiResponse{
-				Id:        userInformation.Id,
-				Kind:      userInformation.Kind,
-				Username:  userInformation.Username,
-				Name:      userInformation.Name,
-				BirthDate: userInformation.BirthDate,
-				Email:     userInformation.Email,
+			forms.UpdateResponse{
+				Succeed: succeed,
+				Message: message,
 			},
 		)
 		if responseMarshalError != nil {
@@ -91,6 +83,9 @@ func Whoami(controller *data.Controller) http.HandlerFunc {
 				return
 			}
 			return
+		}
+		if !succeed {
+			responseWriter.WriteHeader(http.StatusForbidden)
 		}
 		responseWriter.Header().Set("content-type", content_types.Json)
 		_, responseWriteError := responseWriter.Write(response)

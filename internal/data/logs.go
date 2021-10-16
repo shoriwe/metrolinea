@@ -65,3 +65,10 @@ func (controller *Controller) LogUpdatePasswordAttempt(request *http.Request, us
 		log.Println(logError)
 	}
 }
+
+func (controller *Controller) LogUpdateEmailAttempt(request *http.Request, username string, succeed bool) {
+	logError := controller.callbacks.LogUpdateEmailAttempt(request, time.Now(), username, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}

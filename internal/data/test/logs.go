@@ -74,3 +74,12 @@ func (c *Callbacks) LogUpdatePasswordAttempt(request *http.Request, _ time.Time,
 	}
 	return nil
 }
+
+func (c *Callbacks) LogUpdateEmailAttempt(request *http.Request, _ time.Time, usernameOrCookies string, succeed bool) error {
+	if succeed {
+		log.Printf("UPDATE EMAIL FOR: %s - %s SUCCEED\n", usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("UPDATE EMAIL FOR: %s - %s FAILED\n", usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}

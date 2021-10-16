@@ -15,6 +15,7 @@ func NewHandler(controller *data.Controller) *http.ServeMux {
 	handler.HandleFunc("/whoami", account.Whoami(controller))
 	handler.HandleFunc("/register", account.Register(controller))
 	handler.HandleFunc("/user/update/password", account.UpdatePassword(controller))
+	handler.HandleFunc("/user/update/email", account.UpdateEmail(controller))
 	handler.HandleFunc("/user/exists/", general.UserExists(controller))
 	return handler
 }

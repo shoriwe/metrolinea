@@ -15,6 +15,7 @@ type Callbacks interface {
 	LogLogoutAttempt(request *http.Request, now time.Time, usernameOrCookies string, succeed bool) error
 	LogCheckCookies(request *http.Request, now time.Time, usernameOrCookies string, succeed bool) error
 	LogUpdatePasswordAttempt(request *http.Request, now time.Time, usernameOrCookies string, succeed bool) error
+	LogUpdateEmailAttempt(request *http.Request, now time.Time, usernameOrCookies string, succeed bool) error
 	LogUserExists(request *http.Request, now time.Time, username string, exists bool) error
 	LogError(request *http.Request, now time.Time, err error) error
 	CheckUserExists(request *http.Request, username string) (bool, error)
@@ -24,6 +25,7 @@ type Callbacks interface {
 	Register(request *http.Request, registrationForm *forms.RegisterForm) (bool, string, error)
 	Logout(request *http.Request, cookies string) (bool, error)
 	UpdatePassword(request *http.Request, username string, oldPassword, newPassword string) (bool, string, error)
+	UpdateEmail(request *http.Request, username string, password, email string) (bool, string, error)
 }
 
 type Controller struct {

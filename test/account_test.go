@@ -72,7 +72,7 @@ func TestLogin(t *testing.T) {
 		if unmarshalError != nil {
 			t.Fatal(unmarshalError)
 		}
-		fmt.Println(whoami)
+		fmt.Println(string(responseBody))
 	}
 	{ // Logout
 		logoutForm, marshalError := json.Marshal(
@@ -99,22 +99,20 @@ func TestLogin(t *testing.T) {
 		if unmarshalError != nil {
 			t.Fatal(unmarshalError)
 		}
-		fmt.Println(logout)
+		fmt.Println(string(responseBody))
 	}
 }
 
 func TestRegister(t *testing.T) {
 	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
-	{ // Login
+	{ // Register
 		registrationForm, marshalError := json.Marshal(
 			forms.RegisterForm{
-				Username:         "lord-protector",
-				Password:         "dawnwall1",
-				Name:             "Corvo Atano",
-				BirthDate:        time.Time{},
-				CardNumber:       "0000000",
-				Email:            "corvo@akane.fr",
-				EmergencyContact: "EMILY_PHONE_NUMBER",
+				Username:  "lord-protector",
+				Password:  "dawnwall1",
+				Name:      "Corvo Atano",
+				BirthDate: time.Time{},
+				Email:     "corvo@akane.fr",
 			},
 		)
 		if marshalError != nil {
@@ -194,7 +192,7 @@ func TestRegister(t *testing.T) {
 		if unmarshalError != nil {
 			t.Fatal(unmarshalError)
 		}
-		fmt.Println(whoami)
+		fmt.Println(string(responseBody))
 	}
 	{ // Logout
 		logoutForm, marshalError := json.Marshal(
@@ -221,23 +219,20 @@ func TestRegister(t *testing.T) {
 		if unmarshalError != nil {
 			t.Fatal(unmarshalError)
 		}
-		fmt.Println(logout)
+		fmt.Println(string(responseBody))
 	}
 }
 
 func TestUpdatePassword(t *testing.T) {
-	data.TestSetup()
 	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
-	{ // Login
+	{ // Register
 		registrationForm, marshalError := json.Marshal(
 			forms.RegisterForm{
-				Username:         "emily",
-				Password:         "dawnwall2",
-				Name:             "Emily Colwin",
-				BirthDate:        time.Time{},
-				CardNumber:       "0000000",
-				Email:            "emily@akane.fr",
-				EmergencyContact: "CORVO_PHONE_NUMBER",
+				Username:  "emily",
+				Password:  "dawnwall2",
+				Name:      "Emily Colwin",
+				BirthDate: time.Time{},
+				Email:     "emily@akane.fr",
 			},
 		)
 		if marshalError != nil {
@@ -319,7 +314,7 @@ func TestUpdatePassword(t *testing.T) {
 		if unmarshalError != nil {
 			t.Fatal(unmarshalError)
 		}
-		fmt.Println(updateResponse)
+		fmt.Println(string(responseBody))
 	}
 	{ // Logout
 		logoutForm, marshalError := json.Marshal(
@@ -346,7 +341,7 @@ func TestUpdatePassword(t *testing.T) {
 		if unmarshalError != nil {
 			t.Fatal(unmarshalError)
 		}
-		fmt.Println(logout)
+		fmt.Println(string(responseBody))
 	}
 	{ // Login again
 		loginForm, marshalError := json.Marshal(
@@ -375,5 +370,130 @@ func TestUpdatePassword(t *testing.T) {
 			t.Fatal(unmarshalError)
 		}
 		sessionCookies = loginResponse.Cookies
+	}
+}
+
+func TestUpdateEmail(t *testing.T) {
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
+	{ // Register
+		registrationForm, marshalError := json.Marshal(
+			forms.RegisterForm{
+				Username:  "emily",
+				Password:  "dawnwall2",
+				Name:      "Emily Colwin",
+				BirthDate: time.Time{},
+				Email:     "emily@akane.fr",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/register", content_types.Json, bytes.NewReader(registrationForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Registration failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var registrationResponse forms.RegisterResponse
+		unmarshalError := json.Unmarshal(responseBody, &registrationResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if !registrationResponse.Succeed {
+			t.Fatal(registrationResponse.Message)
+		}
+	}
+	var sessionCookies string
+	{ // Login
+		loginForm, marshalError := json.Marshal(
+			forms.LoginForm{
+				Username: "emily",
+				Password: "dawnwall2",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/login", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Login failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var loginResponse forms.LoginResponse
+		unmarshalError := json.Unmarshal(responseBody, &loginResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		sessionCookies = loginResponse.Cookies
+	}
+	{ // Update Email
+		updateEmailForm, marshalError := json.Marshal(
+			forms.UpdateEmailForm{
+				Cookies:  sessionCookies,
+				NewEmail: "corp@org.corp",
+				Password: "dawnwall2",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/user/update/email", content_types.Json, bytes.NewReader(updateEmailForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Update email error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var updateResponse forms.UpdateResponse
+		unmarshalError := json.Unmarshal(responseBody, &updateResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		fmt.Println(string(responseBody))
+	}
+	{ // Whoami
+		whoamiForm, marshalError := json.Marshal(
+			forms.WhoamiForm{
+				Cookies: sessionCookies,
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/whoami", content_types.Json, bytes.NewReader(whoamiForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Whoami failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var whoami forms.WhoamiResponse
+		unmarshalError := json.Unmarshal(responseBody, &whoami)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if whoami.Email != "corp@org.corp" {
+			t.Fatal(whoami.Email)
+		}
+		fmt.Println(string(responseBody))
 	}
 }

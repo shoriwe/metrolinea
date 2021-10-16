@@ -63,3 +63,26 @@ func (controller *Controller) UpdatePassword(request *http.Request, cookies, old
 	go controller.LogUpdatePasswordAttempt(request, cookies, false)
 	return false, "Wrong cookies", nil
 }
+
+func (controller *Controller) UpdateEmail(request *http.Request, cookies, password, email string) (bool, string, error) {
+	userInformation, succeed, checkError := controller.CheckCookies(request, cookies)
+	if checkError != nil {
+		go controller.LogUpdateEmailAttempt(request, cookies, false)
+		return false, "", checkError
+	}
+	if succeed {
+		updateSucceed, message, updateError := controller.callbacks.UpdateEmail(request, userInformation.Username, password, email)
+		if updateError != nil {
+			go controller.LogUpdateEmailAttempt(request, userInformation.Username, false)
+			return false, "Internal server error", nil
+		}
+		if updateSucceed {
+			go controller.LogUpdateEmailAttempt(request, userInformation.Username, true)
+		} else {
+			go controller.LogUpdateEmailAttempt(request, userInformation.Username, false)
+		}
+		return updateSucceed, message, nil
+	}
+	go controller.LogUpdateEmailAttempt(request, cookies, false)
+	return false, "Wrong cookies", nil
+}
