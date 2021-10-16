@@ -1,7 +1,9 @@
 package data
 
-func CheckUserExists(username string) (bool, error) {
-	exists, checkError := checkUserExistsCallback(username)
-	go LogUserExists(username, exists)
+import "net/http"
+
+func (controller *Controller) CheckUserExists(request *http.Request, username string) (bool, error) {
+	exists, checkError := controller.callbacks.CheckUserExists(request, username)
+	go controller.LogUserExists(request, username, exists)
 	return exists, checkError
 }

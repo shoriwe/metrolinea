@@ -16,8 +16,7 @@ import (
 )
 
 func TestLogin(t *testing.T) {
-	data.TestSetup()
-	server := httptest.NewServer(api.MetrolineaHandler)
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
 
 	var sessionCookies string
 	{ // Register Account
@@ -105,8 +104,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestRegister(t *testing.T) {
-	data.TestSetup()
-	server := httptest.NewServer(api.MetrolineaHandler)
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
 	{ // Login
 		registrationForm, marshalError := json.Marshal(
 			forms.RegisterForm{
@@ -224,5 +222,158 @@ func TestRegister(t *testing.T) {
 			t.Fatal(unmarshalError)
 		}
 		fmt.Println(logout)
+	}
+}
+
+func TestUpdatePassword(t *testing.T) {
+	data.TestSetup()
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
+	{ // Login
+		registrationForm, marshalError := json.Marshal(
+			forms.RegisterForm{
+				Username:         "emily",
+				Password:         "dawnwall2",
+				Name:             "Emily Colwin",
+				BirthDate:        time.Time{},
+				CardNumber:       "0000000",
+				Email:            "emily@akane.fr",
+				EmergencyContact: "CORVO_PHONE_NUMBER",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/register", content_types.Json, bytes.NewReader(registrationForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Registration failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var registrationResponse forms.RegisterResponse
+		unmarshalError := json.Unmarshal(responseBody, &registrationResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if !registrationResponse.Succeed {
+			t.Fatal(registrationResponse.Message)
+		}
+	}
+	var sessionCookies string
+	{ // Login
+		loginForm, marshalError := json.Marshal(
+			forms.LoginForm{
+				Username: "emily",
+				Password: "dawnwall2",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/login", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Login failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var loginResponse forms.LoginResponse
+		unmarshalError := json.Unmarshal(responseBody, &loginResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		sessionCookies = loginResponse.Cookies
+	}
+	{ // Update Password
+		updatePasswordForm, marshalError := json.Marshal(
+			forms.UpdatePasswordForm{
+				Cookies:     sessionCookies,
+				OldPassword: "dawnwall2",
+				NewPassword: "my-new-password",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/user/update/password", content_types.Json, bytes.NewReader(updatePasswordForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Update password error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var updateResponse forms.UpdateResponse
+		unmarshalError := json.Unmarshal(responseBody, &updateResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		fmt.Println(updateResponse)
+	}
+	{ // Logout
+		logoutForm, marshalError := json.Marshal(
+			forms.LogoutForm{
+				Cookies: sessionCookies,
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/logout", content_types.Json, bytes.NewReader(logoutForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Logout failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var logout forms.LogoutResponse
+		unmarshalError := json.Unmarshal(responseBody, &logout)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		fmt.Println(logout)
+	}
+	{ // Login again
+		loginForm, marshalError := json.Marshal(
+			forms.LoginForm{
+				Username: "emily",
+				Password: "my-new-password",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/login", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Login failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var loginResponse forms.LoginResponse
+		unmarshalError := json.Unmarshal(responseBody, &loginResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		sessionCookies = loginResponse.Cookies
 	}
 }

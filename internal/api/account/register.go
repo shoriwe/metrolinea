@@ -11,91 +11,93 @@ import (
 	"net/http"
 )
 
-func Register(responseWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		go data.LogError(errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
-		_, writeError := responseWriter.Write(messages.MethodsAllowed(http.MethodPost))
-		if writeError != nil {
-			go data.LogError(writeError)
+func Register(controller *data.Controller) http.HandlerFunc {
+	return func(responseWriter http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodPost {
+			go controller.LogError(request, errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
+			_, writeError := responseWriter.Write(messages.MethodsAllowed(http.MethodPost))
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
+			responseWriter.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		responseWriter.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-	// Handle wrong content type
-	if request.Header.Get("content-type") != content_types.Json {
-		go data.LogError(errors.ContentTypeNotSupported(request.RemoteAddr, request.Method, request.RequestURI, request.Header.Get("content-type")))
-		responseWriter.WriteHeader(http.StatusUnsupportedMediaType)
-		_, writeError := responseWriter.Write(messages.ContentTypesSupported(content_types.Json))
-		if writeError != nil {
-			go data.LogError(writeError)
+		// Handle wrong content type
+		if request.Header.Get("content-type") != content_types.Json {
+			go controller.LogError(request, errors.ContentTypeNotSupported(request.RemoteAddr, request.Method, request.RequestURI, request.Header.Get("content-type")))
+			responseWriter.WriteHeader(http.StatusUnsupportedMediaType)
+			_, writeError := responseWriter.Write(messages.ContentTypesSupported(content_types.Json))
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
 			return
 		}
-		return
-	}
-	body, readError := io.ReadAll(request.Body)
-	if readError != nil {
-		go data.LogError(errors.GoRuntimeError(readError, request.RemoteAddr, request.Method, request.RequestURI))
-		responseWriter.WriteHeader(http.StatusInternalServerError)
-		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
-		if writeError != nil {
-			go data.LogError(writeError)
+		body, readError := io.ReadAll(request.Body)
+		if readError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(readError, request.RemoteAddr, request.Method, request.RequestURI))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
 			return
 		}
-		return
-	}
-	var registerForm forms.RegisterForm
-	unmarshalError := json.Unmarshal(body, &registerForm)
-	if unmarshalError != nil {
-		go data.LogError(errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
-		responseWriter.WriteHeader(http.StatusInternalServerError)
-		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
-		if writeError != nil {
-			go data.LogError(writeError)
+		var registerForm forms.RegisterForm
+		unmarshalError := json.Unmarshal(body, &registerForm)
+		if unmarshalError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
 			return
 		}
-		return
-	}
-	registrationSucceed, registrationMessage, registrationError := data.Register(&registerForm)
-	if registrationError != nil {
-		go data.LogError(errors.GoRuntimeError(registrationError, request.RemoteAddr, request.Method, request.RequestURI))
-		responseWriter.WriteHeader(http.StatusInternalServerError)
-		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
-		if writeError != nil {
-			go data.LogError(writeError)
+		registrationSucceed, registrationMessage, registrationError := controller.Register(request, &registerForm)
+		if registrationError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(registrationError, request.RemoteAddr, request.Method, request.RequestURI))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
 			return
 		}
-		return
-	}
-	response, responseMarshalError := json.Marshal(
-		forms.RegisterResponse{
-			Succeed: registrationSucceed,
-			Message: registrationMessage,
-		},
-	)
-	if responseMarshalError != nil {
-		go data.LogError(errors.GoRuntimeError(responseMarshalError, request.RemoteAddr, request.Method, request.RequestURI))
-		responseWriter.WriteHeader(http.StatusInternalServerError)
-		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
-		if writeError != nil {
-			go data.LogError(writeError)
+		response, responseMarshalError := json.Marshal(
+			forms.RegisterResponse{
+				Succeed: registrationSucceed,
+				Message: registrationMessage,
+			},
+		)
+		if responseMarshalError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(responseMarshalError, request.RemoteAddr, request.Method, request.RequestURI))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
 			return
 		}
-		return
-	}
-	if !registrationSucceed {
-		responseWriter.WriteHeader(http.StatusNotAcceptable)
-	}
-	responseWriter.Header().Set("content-type", content_types.Json)
-	_, responseWriteError := responseWriter.Write(response)
-	if responseWriteError != nil {
-		go data.LogError(errors.GoRuntimeError(responseWriteError, request.RemoteAddr, request.Method, request.RequestURI))
-		responseWriter.WriteHeader(http.StatusInternalServerError)
-		_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
-		if writeError != nil {
-			go data.LogError(writeError)
+		if !registrationSucceed {
+			responseWriter.WriteHeader(http.StatusNotAcceptable)
+		}
+		responseWriter.Header().Set("content-type", content_types.Json)
+		_, responseWriteError := responseWriter.Write(response)
+		if responseWriteError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(responseWriteError, request.RemoteAddr, request.Method, request.RequestURI))
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
+			if writeError != nil {
+				go controller.LogError(request, writeError)
+				return
+			}
 			return
 		}
-		return
 	}
 }

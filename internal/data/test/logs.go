@@ -3,73 +3,74 @@ package test
 import (
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 	"log"
+	"net/http"
 	"time"
 )
 
-func LogError(_ time.Time, err error) error {
-	log.Println(err)
+func (c *Callbacks) LogError(request *http.Request, _ time.Time, err error) error {
+	log.Println(request.RemoteAddr, err)
 	return nil
 }
 
-func LogCheckCookies(_ time.Time, username string, exists bool) error {
+func (c *Callbacks) LogCheckCookies(request *http.Request, _ time.Time, username string, exists bool) error {
 	if exists {
-		log.Printf("VALID COOKIES FOR USER: %s\n", username)
+		log.Printf("VALID COOKIES FOR USER: %s - %s\n", username, request.RemoteAddr)
 	} else {
-		log.Printf("INVALID COOKIES RECEIVED: %S\n", username)
+		log.Printf("INVALID COOKIES RECEIVED: %s - %s\n", username, request.RemoteAddr)
 	}
 	return nil
 }
 
-func LogRegisterAttempt(_ time.Time, username, message string, succeed bool) error {
+func (c *Callbacks) LogRegisterAttempt(request *http.Request, _ time.Time, username, message string, succeed bool) error {
 	if succeed {
-		log.Printf("REGISTRATION FOR USER: %s SUCCEED\n", username)
+		log.Printf("REGISTRATION FOR USER: %s -%s SUCCEED\n", username, request.RemoteAddr)
 	} else {
-		log.Printf("REGISTRATION FOR USER: %s FAILED -> %s\n", username, message)
+		log.Printf("REGISTRATION FOR USER: %s - %s FAILED -> %s\n", username, request.RemoteAddr, message)
 	}
 	return nil
 }
 
-func LogUserExists(_ time.Time, username string, exists bool) error {
+func (c *Callbacks) LogUserExists(request *http.Request, _ time.Time, username string, exists bool) error {
 	if exists {
-		log.Printf("LOGIN FOR USER: %s SUCCEED\n", username)
+		log.Printf("LOGIN FOR USER: %s - %s SUCCEED\n", username, request.RemoteAddr)
 	} else {
-		log.Printf("LOGIN FOR USER: %s FAILED\n", username)
+		log.Printf("LOGIN FOR USER: %s - %s FAILED\n", username, request.RemoteAddr)
 	}
 	return nil
 }
 
-func LogLoginAttempt(_ time.Time, usernameOrCookies string, succeed bool) error {
+func (c *Callbacks) LogLoginAttempt(request *http.Request, _ time.Time, usernameOrCookies string, succeed bool) error {
 	if succeed {
-		log.Printf("LOGIN FOR USER: %s SUCCEED\n", usernameOrCookies)
+		log.Printf("LOGIN FOR USER: %s - %s SUCCEED\n", usernameOrCookies, request.RemoteAddr)
 	} else {
-		log.Printf("LOGIN FOR USER: %s FAILED\n", usernameOrCookies)
+		log.Printf("LOGIN FOR USER: %s - %s FAILED\n", usernameOrCookies, request.RemoteAddr)
 	}
 	return nil
 }
 
-func LogLogoutAttempt(_ time.Time, usernameOrCookies string, succeed bool) error {
+func (c *Callbacks) LogLogoutAttempt(request *http.Request, _ time.Time, usernameOrCookies string, succeed bool) error {
 	if succeed {
-		log.Printf("LOGOUT FOR USER: %s SUCCEED\n", usernameOrCookies)
+		log.Printf("LOGOUT FOR USER: %s - %s SUCCEED\n", usernameOrCookies, request.RemoteAddr)
 	} else {
-		log.Printf("LOGOUT WITH COOKIES: %s FAILED\n", usernameOrCookies)
+		log.Printf("LOGOUT WITH COOKIES: %s - %s FAILED\n", usernameOrCookies, request.RemoteAddr)
 	}
 	return nil
 }
 
-func LogWhoamiAttempt(_ time.Time, usernameOrCookies string, succeed bool) error {
+func (c *Callbacks) LogCookieGenerationAttempt(request *http.Request, _ time.Time, userInformation *db_objects.UserInformation, succeed bool) error {
 	if succeed {
-		log.Printf("WHOAMI FOR USER: %s SUCCEED\n", usernameOrCookies)
+		log.Printf("COOKIE GENERATION FOR USER: %s - %s SUCCEED\n", userInformation.Username, request.RemoteAddr)
 	} else {
-		log.Printf("WHOAMI WITH COOKIES: %s FAILED\n", usernameOrCookies)
+		log.Printf("COOKIE GENERATION FOR USER: %s - %s FAILED\n", userInformation.Username, request.RemoteAddr)
 	}
 	return nil
 }
 
-func LogCookieGenerationAttempt(_ time.Time, userInformation *db_objects.UserInformation, succeed bool) error {
+func (c *Callbacks) LogUpdatePasswordAttempt(request *http.Request, _ time.Time, usernameOrCookies string, succeed bool) error {
 	if succeed {
-		log.Printf("COOKIE GENERATION FOR USER: %s SUCCEED\n", userInformation.Username)
+		log.Printf("UPDATE PASSWORD FOR: %s - %s SUCCEED\n", usernameOrCookies, request.RemoteAddr)
 	} else {
-		log.Printf("COOKIE GENERATION FOR USER: %s FAILED\n", userInformation.Username)
+		log.Printf("UPDATE PASSWORD FOR: %s - %s FAILED\n", usernameOrCookies, request.RemoteAddr)
 	}
 	return nil
 }

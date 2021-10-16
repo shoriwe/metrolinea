@@ -3,56 +3,64 @@ package data
 import (
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 	"log"
+	"net/http"
 	"time"
 )
 
 /*
 	Log functions should always be used with keyboard "go"
 */
-func LogError(err error) {
-	logError := logErrorCallback(time.Now(), err)
+func (controller *Controller) LogError(request *http.Request, err error) {
+	logError := controller.callbacks.LogError(request, time.Now(), err)
 	if logError != nil {
 		log.Println(logError)
 	}
 }
 
-func LogUserExists(username string, exists bool) {
-	logError := logUserExistsCallback(time.Now(), username, exists)
+func (controller *Controller) LogUserExists(request *http.Request, username string, exists bool) {
+	logError := controller.callbacks.LogUserExists(request, time.Now(), username, exists)
 	if logError != nil {
 		log.Println(logError)
 	}
 }
 
-func LogLoginAttempt(username string, succeeded bool) {
-	logError := logLoginAttemptCallback(time.Now(), username, succeeded)
+func (controller *Controller) LogLoginAttempt(request *http.Request, username string, succeeded bool) {
+	logError := controller.callbacks.LogLoginAttempt(request, time.Now(), username, succeeded)
 	if logError != nil {
 		log.Println(logError)
 	}
 }
 
-func LogCheckCookies(usernameOrCookies string, succeeded bool) {
-	logError := logCheckCookiesCallback(time.Now(), usernameOrCookies, succeeded)
+func (controller *Controller) LogCheckCookies(request *http.Request, usernameOrCookies string, succeeded bool) {
+	logError := controller.callbacks.LogCheckCookies(request, time.Now(), usernameOrCookies, succeeded)
 	if logError != nil {
 		log.Println(logError)
 	}
 }
 
-func LogLogoutAttempt(usernameOrCookies string, succeeded bool) {
-	logError := logLogoutAttemptCallback(time.Now(), usernameOrCookies, succeeded)
+func (controller *Controller) LogLogoutAttempt(request *http.Request, usernameOrCookies string, succeeded bool) {
+	logError := controller.callbacks.LogLogoutAttempt(request, time.Now(), usernameOrCookies, succeeded)
 	if logError != nil {
 		log.Println(logError)
 	}
 }
 
-func LogRegistrationAttempt(username, message string, succeed bool) {
-	logError := logRegisterAttemptCallback(time.Now(), username, message, succeed)
+func (controller *Controller) LogRegistrationAttempt(request *http.Request, username, message string, succeed bool) {
+	logError := controller.callbacks.LogRegisterAttempt(request, time.Now(), username, message, succeed)
 	if logError != nil {
 		log.Println(logError)
 	}
 }
 
-func LogCookieGenerationAttempt(userInformation *db_objects.UserInformation, succeed bool) {
-	logError := logCookieGenerationAttemptCallback(time.Now(), userInformation, succeed)
+func (controller *Controller) LogCookieGenerationAttempt(request *http.Request, userInformation *db_objects.UserInformation, succeed bool) {
+	logError := controller.callbacks.LogCookieGenerationAttempt(request, time.Now(), userInformation, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
+
+func (controller *Controller) LogUpdatePasswordAttempt(request *http.Request, username string, succeed bool) {
+	logError := controller.callbacks.LogUpdatePasswordAttempt(request, time.Now(), username, succeed)
 	if logError != nil {
 		log.Println(logError)
 	}

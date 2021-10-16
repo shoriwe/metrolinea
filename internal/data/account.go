@@ -1,39 +1,65 @@
 package data
 
-import "github.com/shoriwe/metrolinea/internal/api/forms"
+import (
+	"github.com/shoriwe/metrolinea/internal/api/forms"
+	"net/http"
+)
 
-func Login(username, password string) (string, bool, error) {
-	userInformation, loginSuccess, loginError := loginCallback(username, password)
+func (controller *Controller) Login(request *http.Request, username, password string) (string, bool, error) {
+	userInformation, loginSuccess, loginError := controller.callbacks.Login(request, username, password)
 	if loginError != nil {
-		go LogLoginAttempt(username, false)
+		go controller.LogLoginAttempt(request, username, false)
 		return "", false, loginError
 	}
 	if loginSuccess {
-		go LogLoginAttempt(username, true)
-		cookies, cookieGenerationError := GenerateCookie(userInformation)
+		go controller.LogLoginAttempt(request, username, true)
+		cookies, cookieGenerationError := controller.GenerateCookie(request, userInformation)
 		return cookies, true, cookieGenerationError
 	}
-	go LogLoginAttempt(username, false)
+	go controller.LogLoginAttempt(request, username, false)
 	return "", false, nil
 }
 
-func Register(registrationForm *forms.RegisterForm) (bool, string, error) {
-	doesAlreadyExists, checkError := CheckUserExists(registrationForm.Username)
+func (controller *Controller) Register(request *http.Request, registrationForm *forms.RegisterForm) (bool, string, error) {
+	doesAlreadyExists, checkError := controller.CheckUserExists(request, registrationForm.Username)
 	if checkError != nil {
 		return false, "", checkError
 	}
 	if doesAlreadyExists {
 		return false, "Username already taken", nil
 	}
-	success, message, registrationError := registerCallback(registrationForm)
+	success, message, registrationError := controller.callbacks.Register(request, registrationForm)
 	if registrationError != nil {
-		go LogRegistrationAttempt(registrationForm.Username, message, false)
+		go controller.LogRegistrationAttempt(request, registrationForm.Username, message, false)
 		return false, "", registrationError
 	}
 	if success {
-		go LogRegistrationAttempt(registrationForm.Username, "", true)
+		go controller.LogRegistrationAttempt(request, registrationForm.Username, "", true)
 		return true, message, nil
 	}
-	go LogRegistrationAttempt(registrationForm.Username, message, false)
+	go controller.LogRegistrationAttempt(request, registrationForm.Username, message, false)
 	return false, message, nil
+}
+
+func (controller *Controller) UpdatePassword(request *http.Request, cookies, oldPassword, newPassword string) (bool, string, error) {
+	userInformation, succeed, checkError := controller.CheckCookies(request, cookies)
+	if checkError != nil {
+		go controller.LogUpdatePasswordAttempt(request, cookies, false)
+		return false, "", checkError
+	}
+	if succeed {
+		updateSucceed, message, updateError := controller.callbacks.UpdatePassword(request, userInformation.Username, oldPassword, newPassword)
+		if updateError != nil {
+			go controller.LogUpdatePasswordAttempt(request, userInformation.Username, false)
+			return false, "Internal server error", nil
+		}
+		if updateSucceed {
+			go controller.LogUpdatePasswordAttempt(request, userInformation.Username, true)
+		} else {
+			go controller.LogUpdatePasswordAttempt(request, userInformation.Username, false)
+		}
+		return updateSucceed, message, nil
+	}
+	go controller.LogUpdatePasswordAttempt(request, cookies, false)
+	return false, "Wrong cookies", nil
 }

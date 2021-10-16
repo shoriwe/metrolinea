@@ -5,16 +5,15 @@ import (
 	"encoding/base32"
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 	"github.com/shoriwe/metrolinea/internal/errors"
+	"net/http"
 )
 
-var userSessions = map[string]*db_objects.UserInformation{}
-
-func CheckCookies(cookies string) (*db_objects.UserInformation, bool, error) {
-	userInformation, found := userSessions[cookies]
+func (c *Callbacks) CheckCookies(_ *http.Request, cookies string) (*db_objects.UserInformation, bool, error) {
+	userInformation, found := c.userSessions[cookies]
 	return userInformation, found, nil
 }
 
-func GenerateCookie(userInformation *db_objects.UserInformation) (string, error) {
+func (c *Callbacks) GenerateCookie(_ *http.Request, userInformation *db_objects.UserInformation) (string, error) {
 	for i := 0; i < 5; i++ {
 		rawUniqueId := make([]byte, 64)
 		_, readRandError := rand.Read(
@@ -23,20 +22,20 @@ func GenerateCookie(userInformation *db_objects.UserInformation) (string, error)
 			return "", readRandError
 		}
 		uniqueId := base32.HexEncoding.EncodeToString(rawUniqueId)
-		_, ok := userSessions[uniqueId]
+		_, ok := c.userSessions[uniqueId]
 		if !ok {
-			userSessions[uniqueId] = userInformation
+			c.userSessions[uniqueId] = userInformation
 			return uniqueId, nil
 		}
 	}
 	return "", errors.CookieGenerationError(userInformation)
 }
 
-func Logout(cookies string) (bool, error) {
-	_, found := userSessions[cookies]
+func (c *Callbacks) Logout(_ *http.Request, cookies string) (bool, error) {
+	_, found := c.userSessions[cookies]
 	if !found {
 		return false, nil
 	}
-	delete(userSessions, cookies)
+	delete(c.userSessions, cookies)
 	return true, nil
 }

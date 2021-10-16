@@ -15,7 +15,7 @@ import (
 
 func TestUserExists(t *testing.T) {
 	data.TestSetup()
-	server := httptest.NewServer(api.MetrolineaHandler)
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
 	{ // Check if user exists
 		response, postError := server.Client().Post(server.URL+"/user/exists/terminator", content_types.PlainText, nil)
 		if postError != nil {

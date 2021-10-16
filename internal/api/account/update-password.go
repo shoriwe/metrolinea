@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func Login(controller *data.Controller) http.HandlerFunc {
+func UpdatePassword(controller *data.Controller) http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodPost {
 			go controller.LogError(request, errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
@@ -45,8 +45,8 @@ func Login(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		var loginForm forms.LoginForm
-		unmarshalError := json.Unmarshal(body, &loginForm)
+		var updatePasswordForm forms.UpdatePasswordForm
+		unmarshalError := json.Unmarshal(body, &updatePasswordForm)
 		if unmarshalError != nil {
 			go controller.LogError(request, errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -57,9 +57,9 @@ func Login(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		cookies, loginSuccess, loginError := controller.Login(request, loginForm.Username, loginForm.Password)
-		if loginError != nil {
-			go controller.LogError(request, errors.GoRuntimeError(loginError, request.RemoteAddr, request.Method, request.RequestURI))
+		succeed, message, updateError := controller.UpdatePassword(request, updatePasswordForm.Cookies, updatePasswordForm.OldPassword, updatePasswordForm.NewPassword)
+		if updateError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(updateError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
 			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 			if writeError != nil {
@@ -68,13 +68,10 @@ func Login(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		if !loginSuccess {
-			responseWriter.WriteHeader(http.StatusForbidden)
-			return
-		}
 		response, responseMarshalError := json.Marshal(
-			forms.LoginResponse{
-				Cookies: cookies,
+			forms.UpdateResponse{
+				Succeed: succeed,
+				Message: message,
 			},
 		)
 		if responseMarshalError != nil {
@@ -86,6 +83,9 @@ func Login(controller *data.Controller) http.HandlerFunc {
 				return
 			}
 			return
+		}
+		if !succeed {
+			responseWriter.WriteHeader(http.StatusForbidden)
 		}
 		responseWriter.Header().Set("content-type", content_types.Json)
 		_, responseWriteError := responseWriter.Write(response)

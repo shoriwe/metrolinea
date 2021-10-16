@@ -48,3 +48,31 @@ type LogoutForm struct {
 type LogoutResponse struct {
 	Succeed bool
 }
+
+type UpdatePasswordForm struct {
+	Cookies     string
+	OldPassword string
+	NewPassword string
+}
+
+type UpdateEmail struct {
+	Cookies  string
+	NewEmail string
+	Password string
+}
+
+type UpdateEmergencyContact struct {
+	Cookies             string
+	NewEmergencyContact string
+	Password            string
+}
+
+type UpdateCard struct {
+	Cookies string
+	NewCard string
+}
+
+type UpdateResponse struct {
+	Succeed bool
+	Message string
+}

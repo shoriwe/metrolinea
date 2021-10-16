@@ -1,42 +1,45 @@
 package data
 
-import "github.com/shoriwe/metrolinea/internal/data/db_objects"
+import (
+	"github.com/shoriwe/metrolinea/internal/data/db_objects"
+	"net/http"
+)
 
-func GenerateCookie(userInformation *db_objects.UserInformation) (string, error) {
-	cookies, cookieGenerationError := generateCookieCallback(userInformation)
+func (controller *Controller) GenerateCookie(request *http.Request, userInformation *db_objects.UserInformation) (string, error) {
+	cookies, cookieGenerationError := controller.callbacks.GenerateCookie(request, userInformation)
 	if cookieGenerationError != nil {
-		go LogCookieGenerationAttempt(userInformation, false)
+		go controller.LogCookieGenerationAttempt(request, userInformation, false)
 		return "", cookieGenerationError
 	}
-	go LogCookieGenerationAttempt(userInformation, true)
+	go controller.LogCookieGenerationAttempt(request, userInformation, true)
 	return cookies, nil
 }
 
-func CheckCookies(cookies string) (*db_objects.UserInformation, bool, error) {
-	userInformation, succeed, checkError := checkCookiesCallback(cookies)
+func (controller *Controller) CheckCookies(request *http.Request, cookies string) (*db_objects.UserInformation, bool, error) {
+	userInformation, succeed, checkError := controller.callbacks.CheckCookies(request, cookies)
 	if checkError != nil {
-		go LogCheckCookies(cookies, false)
+		go controller.LogCheckCookies(request, cookies, false)
 		return nil, false, checkError
 	}
 	if succeed {
-		go LogCheckCookies(userInformation.Username, true)
+		go controller.LogCheckCookies(request, userInformation.Username, true)
 		return userInformation, true, nil
 	}
-	go LogCheckCookies(cookies, false)
+	go controller.LogCheckCookies(request, cookies, false)
 	return nil, false, nil
 }
 
-func Logout(cookies string) (bool, error) {
-	userInformation, validCookies, cookieCheckError := CheckCookies(cookies)
+func (controller *Controller) Logout(request *http.Request, cookies string) (bool, error) {
+	userInformation, validCookies, cookieCheckError := controller.CheckCookies(request, cookies)
 	if cookieCheckError != nil {
-		go LogLogoutAttempt(cookies, false)
+		go controller.LogLogoutAttempt(request, cookies, false)
 		return false, cookieCheckError
 	}
 	if validCookies {
-		success, logoutError := logoutCallback(cookies)
-		go LogLogoutAttempt(userInformation.Username, success)
+		success, logoutError := controller.callbacks.Logout(request, cookies)
+		go controller.LogLogoutAttempt(request, userInformation.Username, success)
 		return success, logoutError
 	}
-	go LogLogoutAttempt(cookies, false)
+	go controller.LogLogoutAttempt(request, cookies, false)
 	return false, nil
 }
