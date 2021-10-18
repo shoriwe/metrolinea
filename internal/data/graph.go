@@ -80,9 +80,14 @@ func (g *Graph) DeleteRoutes(routes []string) (bool, string) {
 	return true, ""
 }
 
-// http://www.gitta.info/Accessibiliti/en/html/Dijkstra_learningObject1.html
-func (g *Graph) Dijkstra(start, target string) ([]string, string) {
-	// ToDo: Check if start and target are int the graph
+// Dijkstra documentation: http://www.gitta.info/Accessibiliti/en/html/Dijkstra_learningObject1.html
+func (g *Graph) Dijkstra(source, target string) ([]string, string) {
+	if _, found := g.Nodes[source]; !found {
+		return nil, source
+	}
+	if _, found := g.Nodes[target]; !found {
+		return nil, target
+	}
 
 	dist := map[string]uint{}
 	Q := map[string]struct{}{}
@@ -97,14 +102,14 @@ func (g *Graph) Dijkstra(start, target string) ([]string, string) {
 	go func() {
 		for nodeName := range g.Nodes {
 			previous[nodeName] = ""
-			if nodeName == start {
+			if nodeName == source {
 				continue
 			}
 			dist[nodeName] = ^uint(0)
 			Q[nodeName] = struct{}{}
 		}
-		dist[start] = 0
-		Q[start] = struct{}{}
+		dist[source] = 0
+		Q[source] = struct{}{}
 		done <- true
 	}()
 
