@@ -71,3 +71,42 @@ func (c *Callbacks) UpdateEmail(_ *http.Request, username string, password, newE
 	c.usersDatabase[username].Email = newEmail
 	return true, "Update Succeed", nil
 }
+
+func (c *Callbacks) AdminUpdateUserPassword(_ *http.Request, username, newPassword string) (bool, string, error) {
+	_, found := c.usersDatabase[username]
+	if !found {
+		return false, "username not found", nil
+	}
+	// ToDo: Check the password is strong
+	c.usersDatabase[username].PasswordHash = newPassword
+	return true, "Password updated successfully", nil
+}
+
+func (c *Callbacks) AdminUpdateUserEmail(_ *http.Request, username, newEmail string) (bool, string, error) {
+	_, found := c.usersDatabase[username]
+	if !found {
+		return false, "username not found", nil
+	}
+	// ToDo: Check the email is valid
+	c.usersDatabase[username].Email = newEmail
+	return true, "Email updated successfully", nil
+}
+
+func (c *Callbacks) AdminCreateUser(_ *http.Request, createUserForm forms.AdminCreateUserForm) (bool, string, error) {
+	_, found := c.usersDatabase[createUserForm.Username]
+	if found {
+		return false, "User with requested username already exists", nil
+	}
+	// ToDo: Check the email is valid
+	// ToDo: Check password is valid
+	c.usersDatabase[createUserForm.Username] = &db_objects.UserInformation{
+		Id:           c.lastUserId,
+		Kind:         createUserForm.Kind,
+		Username:     createUserForm.Username,
+		PasswordHash: createUserForm.Password,
+		Name:         createUserForm.Name,
+		Email:        createUserForm.Email,
+		BirthDate:    createUserForm.BirthDate,
+	}
+	return true, "User successfully created", nil
+}

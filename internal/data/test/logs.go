@@ -83,3 +83,30 @@ func (c *Callbacks) LogUpdateEmailAttempt(request *http.Request, _ time.Time, us
 	}
 	return nil
 }
+
+func (c *Callbacks) LogAdminUpdateUserPasswordAttempt(request *http.Request, _ time.Time, usernameOrCookies, targetUsername string, succeed bool) error {
+	if succeed {
+		log.Printf("UPDATE PASSWORD FOR USERNAME: %s BY ADMIN USER %s - %s SUCCEED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("UPDATE PASSWORD FOR USERNAME: %s BY ADMIN USER %s - %s FAILED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}
+
+func (c *Callbacks) LogAdminUpdateUserEmailAttempt(request *http.Request, _ time.Time, usernameOrCookies, targetUsername string, succeed bool) error {
+	if succeed {
+		log.Printf("UPDATE EMAIL FOR USERNAME: %s BY ADMIN USER %s - %s SUCCEED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("UPDATE EMAIL FOR USERNAME: %s BY ADMIN USER %s - %s FAILED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}
+
+func (c *Callbacks) LogAdminCreateUserAttempt(request *http.Request, _ time.Time, usernameOrCookies, targetUsername string, succeed bool) error {
+	if succeed {
+		log.Printf("USER CREATION: %s BY ADMIN USER %s - %s SUCCEED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("USER CREATION: %s BY ADMIN USER %s - %s FAILED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}

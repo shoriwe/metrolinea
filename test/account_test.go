@@ -19,7 +19,7 @@ func TestLogin(t *testing.T) {
 	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
 
 	var sessionCookies string
-	{ // Register Account
+	{ // Login
 		loginForm, marshalError := json.Marshal(
 			forms.LoginForm{
 				Username: "terminator",

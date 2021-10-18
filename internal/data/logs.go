@@ -72,3 +72,24 @@ func (controller *Controller) LogUpdateEmailAttempt(request *http.Request, usern
 		log.Println(logError)
 	}
 }
+
+func (controller *Controller) LogAdminUpdateUserPasswordAttempt(request *http.Request, usernameOrCookie, targetUsername string, succeed bool) {
+	logError := controller.callbacks.LogAdminUpdateUserPasswordAttempt(request, time.Now(), usernameOrCookie, targetUsername, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
+
+func (controller *Controller) LogAdminUpdateUserEmailAttempt(request *http.Request, usernameOrCookie, targetUsername string, succeed bool) {
+	logError := controller.callbacks.LogAdminUpdateUserEmailAttempt(request, time.Now(), usernameOrCookie, targetUsername, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
+
+func (controller *Controller) LogAdminCreateUserAttempt(request *http.Request, usernameOrCookie, targetUsername string, succeed bool) {
+	logError := controller.callbacks.LogAdminCreateUserAttempt(request, time.Now(), usernameOrCookie, targetUsername, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
