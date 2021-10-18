@@ -93,3 +93,10 @@ func (controller *Controller) LogAdminCreateUserAttempt(request *http.Request, u
 		log.Println(logError)
 	}
 }
+
+func (controller *Controller) LogAdminDisableUserAttempt(request *http.Request, usernameOrCookie, targetUsername string, succeed bool) {
+	logError := controller.callbacks.LogAdminDisableUserAttempt(request, time.Now(), usernameOrCookie, targetUsername, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}

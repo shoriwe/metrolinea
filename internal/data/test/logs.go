@@ -110,3 +110,12 @@ func (c *Callbacks) LogAdminCreateUserAttempt(request *http.Request, _ time.Time
 	}
 	return nil
 }
+
+func (c *Callbacks) LogAdminDisableUserAttempt(request *http.Request, _ time.Time, usernameOrCookies, targetUsername string, succeed bool) error {
+	if succeed {
+		log.Printf("USER DISABLED: %s BY ADMIN USER %s - %s SUCCEED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("USER DISABLED: %s BY ADMIN USER %s - %s FAILED\n", targetUsername, usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}

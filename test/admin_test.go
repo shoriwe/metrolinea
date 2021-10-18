@@ -363,3 +363,86 @@ func TestAdminCreateUser(t *testing.T) {
 		fmt.Println(string(responseBody))
 	}
 }
+
+func TestAdminDisableUser(t *testing.T) {
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
+
+	var sessionCookies string
+	{ // Login
+		loginForm, marshalError := json.Marshal(
+			forms.LoginForm{
+				Username: "terminator",
+				Password: "Hasta la vista baby!",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/login", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Login failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var loginResponse forms.LoginResponse
+		unmarshalError := json.Unmarshal(responseBody, &loginResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		sessionCookies = loginResponse.Cookies
+	}
+	{ // Disable Marla's user
+		updateEmailForm, marshalError := json.Marshal(
+			forms.AdminDisableUserForm{
+				Cookies:  sessionCookies,
+				Username: "mSinger",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/admin/disable/user", content_types.Json, bytes.NewReader(updateEmailForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("User creation error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var updateResponse forms.UpdateResponse
+		unmarshalError := json.Unmarshal(responseBody, &updateResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if !updateResponse.Succeed {
+			t.Fatal(updateResponse.Message)
+		}
+		fmt.Println(string(responseBody))
+	}
+	{ // Fail login as Marla's user
+		loginForm, marshalError := json.Marshal(
+			forms.LoginForm{
+				Username: "mSinger",
+				Password: "The first rule of the fight club is...",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/login", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode == http.StatusOK {
+			t.Fatal("Disable failed")
+		}
+	}
+}

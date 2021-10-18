@@ -110,3 +110,12 @@ func (c *Callbacks) AdminCreateUser(_ *http.Request, createUserForm forms.AdminC
 	}
 	return true, "User successfully created", nil
 }
+
+func (c *Callbacks) AdminDisableUser(_ *http.Request, username string) (bool, string, error) {
+	_, found := c.usersDatabase[username]
+	if !found {
+		return false, "Username does not exists", nil
+	}
+	delete(c.usersDatabase, username)
+	return true, "User successfully disabled", nil
+}

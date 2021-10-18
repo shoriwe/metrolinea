@@ -89,3 +89,31 @@ func (controller *Controller) AdminCreateUser(request *http.Request, createUserF
 	go controller.LogAdminCreateUserAttempt(request, createUserForm.Cookies, createUserForm.Username, false)
 	return false, "invalid cookies", nil
 }
+
+func (controller *Controller) AdminDisableUser(request *http.Request, cookies, username string) (bool, string, error) {
+	userInformation, validCookies, checkError := controller.CheckCookies(request, cookies)
+	if checkError != nil {
+		go controller.LogAdminDisableUserAttempt(request, cookies, username, false)
+		return false, "Something goes wrong!", checkError
+	}
+	if validCookies {
+		if userInformation.Kind != db_objects.Administrator {
+			go controller.LogAdminDisableUserAttempt(request, userInformation.Username, username, false)
+			return false, "access denied, functionality just for admins!", nil
+		}
+		succeed, message, updateError := controller.callbacks.AdminDisableUser(request, username)
+		if updateError != nil {
+			go controller.LogAdminDisableUserAttempt(request, userInformation.Username, username, false)
+			return false, "Something goes wrong!", updateError
+		}
+		if succeed {
+			go controller.LogAdminDisableUserAttempt(request, userInformation.Username, username, true)
+		} else {
+			go controller.LogAdminDisableUserAttempt(request, userInformation.Username, username, false)
+		}
+		return succeed, message, nil
+
+	}
+	go controller.LogAdminDisableUserAttempt(request, cookies, username, false)
+	return false, "invalid cookies", nil
+}
