@@ -21,7 +21,7 @@ func NewHandler(controller *data.Controller) *http.ServeMux {
 	handler.HandleFunc("/admin/update/user/password", admin.UpdateUserPassword(controller))
 	handler.HandleFunc("/admin/update/user/email", admin.UpdateUserEmail(controller))
 	handler.HandleFunc("/admin/create/user", admin.CreateUser(controller))
-	// ToDo: handler.HandleFunc("/admin/disable/user", admin.DeleteUser(controller))
+	handler.HandleFunc("/admin/disable/user", admin.DisableUser(controller))
 	// ToDo: handler.HandleFunc("/admin/add/terminals", admin.AddTerminals(controller))
 	// ToDo: handler.HandleFunc("/admin/add/routes", admin.AddTerminals(controller))
 	// ToDo: handler.HandleFunc("/admin/delete/terminals", admin.AddTerminals(controller))

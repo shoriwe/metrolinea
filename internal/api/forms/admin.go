@@ -23,3 +23,8 @@ type AdminCreateUserForm struct {
 	BirthDate time.Time
 	Email     string
 }
+
+type AdminDisableUserForm struct {
+	Cookies  string
+	Username string
+}

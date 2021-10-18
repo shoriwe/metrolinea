@@ -19,6 +19,7 @@ type Callbacks interface {
 	LogAdminUpdateUserPasswordAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogAdminUpdateUserEmailAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogAdminCreateUserAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
+	LogAdminDisableUserAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogUserExists(request *http.Request, now time.Time, username string, exists bool) error
 	LogError(request *http.Request, now time.Time, err error) error
 	CheckUserExists(request *http.Request, username string) (bool, error)
@@ -31,11 +32,13 @@ type Callbacks interface {
 	AdminUpdateUserPassword(request *http.Request, username, newPassword string) (bool, string, error)
 	AdminUpdateUserEmail(request *http.Request, username, newEmail string) (bool, string, error)
 	AdminCreateUser(request *http.Request, createUserForm forms.AdminCreateUserForm) (bool, string, error)
+	AdminDisableUser(request *http.Request, username string) (bool, string, error)
 	UpdateEmail(request *http.Request, username string, password, email string) (bool, string, error)
 }
 
 type Controller struct {
 	callbacks Callbacks
+	graph     *Graph
 }
 
 type Settings struct {
