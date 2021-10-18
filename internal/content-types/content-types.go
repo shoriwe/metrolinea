@@ -1,5 +1,6 @@
 package content_types
 
 const (
-	Json = "application/json"
+	Json      = "application/json"
+	PlainText = "text/plain"
 )
