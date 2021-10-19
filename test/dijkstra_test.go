@@ -64,6 +64,11 @@ func TestDijkstra(t *testing.T) {
 				Length: 10,
 				Target: "J",
 			},
+			"11": {
+				Source: "F",
+				Length: 5,
+				Target: "G",
+			},
 		},
 	)
 
@@ -71,7 +76,7 @@ func TestDijkstra(t *testing.T) {
 	if nodeNotFound != "" {
 		t.Fatal(nodeNotFound)
 	}
-	reference := []string{"J", "F", "D", "A"}
+	reference := []string{"J", "G", "F", "D", "A"}
 	if len(route) != len(reference) {
 		t.Fatal(route)
 	}

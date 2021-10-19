@@ -80,6 +80,16 @@ func (g *Graph) DeleteRoutes(routes []string) (bool, string) {
 	return true, ""
 }
 
+func (g *Graph) ListNodes() []string {
+	result := make([]string, len(g.Nodes))
+	index := 0
+	for nodeName := range g.Nodes {
+		result[index] = nodeName
+		index++
+	}
+	return result
+}
+
 // Dijkstra documentation: http://www.gitta.info/Accessibiliti/en/html/Dijkstra_learningObject1.html
 func (g *Graph) Dijkstra(source, target string) ([]string, string) {
 	if _, found := g.Nodes[source]; !found {

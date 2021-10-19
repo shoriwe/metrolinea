@@ -100,3 +100,17 @@ func (controller *Controller) LogAdminDisableUserAttempt(request *http.Request, 
 		log.Println(logError)
 	}
 }
+
+func (controller *Controller) LogAdminAddTerminalsAttempt(request *http.Request, usernameOrCookie string, terminals []string, succeed bool) {
+	logError := controller.callbacks.LogAdminAddTerminalsAttempt(request, time.Now(), usernameOrCookie, terminals, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
+
+func (controller *Controller) LogListTerminalsAttempt(request *http.Request, usernameOrCookie string, succeed bool) {
+	logError := controller.callbacks.LogListTerminalsAttempt(request, time.Now(), usernameOrCookie, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}

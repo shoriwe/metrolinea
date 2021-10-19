@@ -20,6 +20,8 @@ type Callbacks interface {
 	LogAdminUpdateUserEmailAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogAdminCreateUserAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogAdminDisableUserAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
+	LogAdminAddTerminalsAttempt(request *http.Request, now time.Time, usernameOrCookies string, terminals []string, succeed bool) error
+	LogListTerminalsAttempt(request *http.Request, now time.Time, usernameOrCookies string, succeed bool) error
 	LogUserExists(request *http.Request, now time.Time, username string, exists bool) error
 	LogError(request *http.Request, now time.Time, err error) error
 	CheckUserExists(request *http.Request, username string) (bool, error)
@@ -51,5 +53,6 @@ func Setup(settings Settings) (*Controller, error) {
 func TestSetup() *Controller {
 	return &Controller{
 		callbacks: test.NewCallbacks(),
+		graph:     NewGraph(),
 	}
 }

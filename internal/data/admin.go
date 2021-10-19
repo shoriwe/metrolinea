@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"github.com/shoriwe/metrolinea/internal/api/forms"
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
 	"net/http"
@@ -115,5 +116,32 @@ func (controller *Controller) AdminDisableUser(request *http.Request, cookies, u
 
 	}
 	go controller.LogAdminDisableUserAttempt(request, cookies, username, false)
+	return false, "invalid cookies", nil
+}
+
+func (controller *Controller) AdminAddTerminals(request *http.Request, cookies string, terminals []string) (bool, string, error) {
+	userInformation, validCookies, checkError := controller.CheckCookies(request, cookies)
+	if checkError != nil {
+		go controller.LogAdminAddTerminalsAttempt(request, cookies, terminals, false)
+		return false, "Something goes wrong!", checkError
+	}
+	if validCookies {
+		if userInformation.Kind != db_objects.Administrator {
+			go controller.LogAdminAddTerminalsAttempt(request, userInformation.Username, terminals, false)
+			return false, "access denied, functionality just for admins!", nil
+		}
+		succeed, existingTerminal := controller.graph.AddNodes(terminals)
+		var message string
+		if succeed {
+			message = "successfully added all the terminals"
+			go controller.LogAdminAddTerminalsAttempt(request, userInformation.Username, terminals, true)
+		} else {
+			message = fmt.Sprintf("Terminal with name %s already exists", existingTerminal)
+			go controller.LogAdminAddTerminalsAttempt(request, userInformation.Username, terminals, false)
+		}
+		return succeed, message, nil
+
+	}
+	go controller.LogAdminAddTerminalsAttempt(request, cookies, terminals, false)
 	return false, "invalid cookies", nil
 }

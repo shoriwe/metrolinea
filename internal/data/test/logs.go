@@ -119,3 +119,21 @@ func (c *Callbacks) LogAdminDisableUserAttempt(request *http.Request, _ time.Tim
 	}
 	return nil
 }
+
+func (c *Callbacks) LogAdminAddTerminalsAttempt(request *http.Request, _ time.Time, usernameOrCookies string, terminals []string, succeed bool) error {
+	if succeed {
+		log.Printf("ADD TERMINALS: %s BY ADMIN USER %s - %s SUCCEED\n", terminals, usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("ADD TERMINALS: %s BY ADMIN USER %s - %s FAILED\n", terminals, usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}
+
+func (c *Callbacks) LogListTerminalsAttempt(request *http.Request, _ time.Time, usernameOrCookies string, succeed bool) error {
+	if succeed {
+		log.Printf("LIST TERMINALS: %s BY USER %s - %s SUCCEED\n", usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("LIST TERMINALS: %s BY USER %s - %s FAILED\n", usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}

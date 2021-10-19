@@ -1,6 +1,8 @@
 package forms
 
-import "time"
+import (
+	"time"
+)
 
 type AdminUpdateUserPasswordForm struct {
 	Cookies     string
@@ -27,4 +29,14 @@ type AdminCreateUserForm struct {
 type AdminDisableUserForm struct {
 	Cookies  string
 	Username string
+}
+
+type AdminAddTerminalsForm struct {
+	Cookies   string
+	Terminals []string
+}
+
+type AdminAddRoutesForm struct {
+	Cookies string
+	Routes  map[string]uint
 }
