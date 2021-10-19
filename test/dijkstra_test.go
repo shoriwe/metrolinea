@@ -1,19 +1,19 @@
 package test
 
 import (
-	"github.com/shoriwe/metrolinea/internal/data"
+	"github.com/shoriwe/metrolinea/internal/data/graph"
 	"testing"
 )
 
 func TestDijkstra(t *testing.T) {
-	graph := data.NewGraph()
+	g := graph.NewGraph()
 
-	graph.AddNodes(
+	g.AddNodes(
 		[]string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"},
 	)
 
-	graph.AddRoutes(
-		map[string]*data.Route{
+	g.AddRoutes(
+		map[string]graph.Route{
 			"1": {
 				Source: "A",
 				Length: 10,
@@ -72,7 +72,7 @@ func TestDijkstra(t *testing.T) {
 		},
 	)
 
-	route, nodeNotFound := graph.Dijkstra("A", "J")
+	route, nodeNotFound := g.Dijkstra("A", "J")
 	if nodeNotFound != "" {
 		t.Fatal(nodeNotFound)
 	}

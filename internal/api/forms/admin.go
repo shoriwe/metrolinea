@@ -1,6 +1,7 @@
 package forms
 
 import (
+	"github.com/shoriwe/metrolinea/internal/data/graph"
 	"time"
 )
 
@@ -38,5 +39,5 @@ type AdminAddTerminalsForm struct {
 
 type AdminAddRoutesForm struct {
 	Cookies string
-	Routes  map[string]uint
+	Routes  map[string]graph.Route
 }

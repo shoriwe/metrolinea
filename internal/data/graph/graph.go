@@ -1,4 +1,4 @@
-package data
+package graph
 
 import (
 	"sync"
@@ -18,7 +18,7 @@ type Route struct {
 type Graph struct {
 	mutex  *sync.Mutex
 	Nodes  map[string]struct{}
-	Routes map[string]*Route
+	Routes map[string]Route
 }
 
 func (g *Graph) AddNodes(newNodes []string) (bool, string) {
@@ -34,7 +34,7 @@ func (g *Graph) AddNodes(newNodes []string) (bool, string) {
 	return true, ""
 }
 
-func (g *Graph) AddRoutes(routes map[string]*Route) (bool, string, string) {
+func (g *Graph) AddRoutes(routes map[string]Route) (bool, string, string) {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 	for routeName, route := range routes {
@@ -81,6 +81,8 @@ func (g *Graph) DeleteRoutes(routes []string) (bool, string) {
 }
 
 func (g *Graph) ListNodes() []string {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
 	result := make([]string, len(g.Nodes))
 	index := 0
 	for nodeName := range g.Nodes {
@@ -88,6 +90,12 @@ func (g *Graph) ListNodes() []string {
 		index++
 	}
 	return result
+}
+
+func (g *Graph) ListRoutes() map[string]Route {
+	g.mutex.Lock()
+	defer g.mutex.Unlock()
+	return g.Routes
 }
 
 // Dijkstra documentation: http://www.gitta.info/Accessibiliti/en/html/Dijkstra_learningObject1.html
@@ -186,6 +194,6 @@ func NewGraph() *Graph {
 	return &Graph{
 		mutex:  new(sync.Mutex),
 		Nodes:  map[string]struct{}{},
-		Routes: map[string]*Route{},
+		Routes: map[string]Route{},
 	}
 }

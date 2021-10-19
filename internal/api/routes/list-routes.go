@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func ListTerminals(controller *data.Controller) http.HandlerFunc {
+func ListRoutes(controller *data.Controller) http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodPost {
 			go controller.LogError(request, errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
@@ -45,8 +45,8 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		var listTerminalsForm forms.ListForm
-		unmarshalError := json.Unmarshal(body, &listTerminalsForm)
+		var listRoutesForm forms.ListForm
+		unmarshalError := json.Unmarshal(body, &listRoutesForm)
 		if unmarshalError != nil {
 			go controller.LogError(request, errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -57,7 +57,7 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		terminals, authSuccess, checkError := controller.ListTerminals(request, listTerminalsForm.Cookies)
+		routes, authSuccess, checkError := controller.ListRoutes(request, listRoutesForm.Cookies)
 		if checkError != nil {
 			go controller.LogError(request, errors.GoRuntimeError(checkError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -73,8 +73,8 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 			return
 		}
 		response, responseMarshalError := json.Marshal(
-			forms.ListTerminalsResponse{
-				Terminals: terminals,
+			forms.ListRoutesResponse{
+				Routes: routes,
 			},
 		)
 		if responseMarshalError != nil {

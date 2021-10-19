@@ -9,6 +9,7 @@ import (
 	content_types "github.com/shoriwe/metrolinea/internal/content-types"
 	"github.com/shoriwe/metrolinea/internal/data"
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
+	"github.com/shoriwe/metrolinea/internal/data/graph"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -512,7 +513,7 @@ func TestAddTerminals(t *testing.T) {
 	}
 	{ // List terminals
 		loginForm, marshalError := json.Marshal(
-			forms.ListTerminalsForm{
+			forms.ListForm{
 				Cookies: sessionCookies,
 			},
 		)
@@ -538,8 +539,207 @@ func TestAddTerminals(t *testing.T) {
 		if len(listTerminalsReponse.Terminals) != 3 {
 			t.Fatal(string(responseBody))
 		}
-		if listTerminalsReponse.Terminals[0] != "A" && listTerminalsReponse.Terminals[1] != "B" && listTerminalsReponse.Terminals[2] != "C" {
+		aFound := false
+		bFound := false
+		cFound := false
+		for _, element := range listTerminalsReponse.Terminals {
+			switch element {
+			case "A":
+				aFound = true
+			case "B":
+				bFound = true
+			case "C":
+				cFound = true
+			}
+		}
+		if !(aFound && bFound && cFound) {
 			t.Fatal(listTerminalsReponse.Terminals)
+		}
+	}
+}
+
+func TestAddRoutes(t *testing.T) {
+	server := httptest.NewServer(api.NewHandler(data.TestSetup()))
+
+	var sessionCookies string
+	{ // Login
+		loginForm, marshalError := json.Marshal(
+			forms.LoginForm{
+				Username: "terminator",
+				Password: "Hasta la vista baby!",
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/login", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Login failed")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var loginResponse forms.LoginResponse
+		unmarshalError := json.Unmarshal(responseBody, &loginResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		sessionCookies = loginResponse.Cookies
+	}
+	{ // Add terminals
+		addTerminalsForm, marshalError := json.Marshal(
+			forms.AdminAddTerminalsForm{
+				Cookies:   sessionCookies,
+				Terminals: []string{"A", "B", "C"},
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/admin/add/terminals", content_types.Json, bytes.NewReader(addTerminalsForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Add terminals error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var updateResponse forms.UpdateResponse
+		unmarshalError := json.Unmarshal(responseBody, &updateResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if !updateResponse.Succeed {
+			t.Fatal(updateResponse.Message)
+		}
+		fmt.Println(string(responseBody))
+	}
+	{ // Add routes
+		addRoutesForm, marshalError := json.Marshal(
+			forms.AdminAddRoutesForm{
+				Cookies: sessionCookies,
+				Routes: map[string]graph.Route{
+					"1": {
+						Source: "A",
+						Length: 1,
+						Target: "B",
+					},
+					"2": {
+						Source: "B",
+						Length: 1,
+						Target: "A",
+					},
+					"3": {
+						Source: "C",
+						Length: 5,
+						Target: "A",
+					},
+				},
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/admin/add/routes", content_types.Json, bytes.NewReader(addRoutesForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Add routes error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var updateResponse forms.UpdateResponse
+		unmarshalError := json.Unmarshal(responseBody, &updateResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if !updateResponse.Succeed {
+			t.Fatal(updateResponse.Message)
+		}
+		fmt.Println(string(responseBody))
+	}
+	{ // List terminals
+		loginForm, marshalError := json.Marshal(
+			forms.ListForm{
+				Cookies: sessionCookies,
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/list/terminals", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Terminals Add error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var listTerminalsReponse forms.ListTerminalsResponse
+		unmarshalError := json.Unmarshal(responseBody, &listTerminalsReponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if len(listTerminalsReponse.Terminals) != 3 {
+			t.Fatal(string(responseBody))
+		}
+		aFound := false
+		bFound := false
+		cFound := false
+		for _, element := range listTerminalsReponse.Terminals {
+			switch element {
+			case "A":
+				aFound = true
+			case "B":
+				bFound = true
+			case "C":
+				cFound = true
+			}
+		}
+		if !(aFound && bFound && cFound) {
+			t.Fatal(listTerminalsReponse.Terminals)
+		}
+	}
+	{ // List routes
+		loginForm, marshalError := json.Marshal(
+			forms.ListForm{
+				Cookies: sessionCookies,
+			},
+		)
+		if marshalError != nil {
+			t.Fatal(marshalError)
+		}
+		response, postError := server.Client().Post(server.URL+"/list/routes", content_types.Json, bytes.NewReader(loginForm))
+		if postError != nil {
+			t.Fatal(postError)
+		}
+		if response.StatusCode != http.StatusOK {
+			t.Fatal("Routes Add error")
+		}
+		responseBody, readError := io.ReadAll(response.Body)
+		if readError != nil {
+			t.Fatal(readError)
+		}
+		var listRoutesResponse forms.ListRoutesResponse
+		unmarshalError := json.Unmarshal(responseBody, &listRoutesResponse)
+		if unmarshalError != nil {
+			t.Fatal(unmarshalError)
+		}
+		if len(listRoutesResponse.Routes) != 3 {
+			t.Fatal(string(responseBody))
 		}
 	}
 }

@@ -24,11 +24,11 @@ func NewHandler(controller *data.Controller) *http.ServeMux {
 	handler.HandleFunc("/admin/create/user", admin.CreateUser(controller))
 	handler.HandleFunc("/admin/disable/user", admin.DisableUser(controller))
 	handler.HandleFunc("/admin/add/terminals", admin.AddTerminals(controller))
-	// handler.HandleFunc("/admin/add/routes", admin.AddRoutes(controller))
+	handler.HandleFunc("/admin/add/routes", admin.AddRoutes(controller))
 	// handler.HandleFunc("/admin/delete/terminals", admin.DeleteTerminals(controller))
 	// handler.HandleFunc("/admin/delete/routes", admin.DeleteRoutes(controller))
 	handler.HandleFunc("/list/terminals", routes.ListTerminals(controller))
-	// ToDo: handler.HandleFunc("/list/terminals/routes", routes.ListTerminalsRoutes(controller))
+	handler.HandleFunc("/list/routes", routes.ListRoutes(controller))
 	// ToDo: handler.HandleFunc("/find/route", routes.FindRoute(controller))
 	return handler
 }

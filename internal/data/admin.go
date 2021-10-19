@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/shoriwe/metrolinea/internal/api/forms"
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
+	"github.com/shoriwe/metrolinea/internal/data/graph"
 	"net/http"
 )
 
@@ -143,5 +144,35 @@ func (controller *Controller) AdminAddTerminals(request *http.Request, cookies s
 
 	}
 	go controller.LogAdminAddTerminalsAttempt(request, cookies, terminals, false)
+	return false, "invalid cookies", nil
+}
+
+func (controller *Controller) AdminAddRoutes(request *http.Request, cookies string, routes map[string]graph.Route) (bool, string, error) {
+	userInformation, validCookies, checkError := controller.CheckCookies(request, cookies)
+	if checkError != nil {
+		go controller.LogAdminAddRoutesAttempt(request, cookies, len(routes), false)
+		return false, "Something goes wrong!", checkError
+	}
+	if validCookies {
+		if userInformation.Kind != db_objects.Administrator {
+			go controller.LogAdminAddRoutesAttempt(request, userInformation.Username, len(routes), false)
+			return false, "access denied, functionality just for admins!", nil
+		}
+		succeed, existingRouteName, nonExistingTerminal := controller.graph.AddRoutes(routes)
+		var message string
+		if succeed {
+			message = "successfully added all the routes"
+			go controller.LogAdminAddRoutesAttempt(request, userInformation.Username, len(routes), true)
+		} else {
+			if existingRouteName != "" {
+				message = fmt.Sprintf("Route already exists with name %s", existingRouteName)
+			} else if nonExistingTerminal != "" {
+				message = fmt.Sprintf("No terminal with name %s", nonExistingTerminal)
+			}
+			go controller.LogAdminAddRoutesAttempt(request, userInformation.Username, len(routes), false)
+		}
+		return succeed, message, nil
+	}
+	go controller.LogAdminAddRoutesAttempt(request, cookies, len(routes), false)
 	return false, "invalid cookies", nil
 }

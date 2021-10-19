@@ -1,4 +1,4 @@
-package routes
+package admin
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func ListTerminals(controller *data.Controller) http.HandlerFunc {
+func AddRoutes(controller *data.Controller) http.HandlerFunc {
 	return func(responseWriter http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodPost {
 			go controller.LogError(request, errors.MethodNotAllowed(request.RemoteAddr, request.Method, request.RequestURI))
@@ -45,8 +45,8 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		var listTerminalsForm forms.ListForm
-		unmarshalError := json.Unmarshal(body, &listTerminalsForm)
+		var addRoutesForm forms.AdminAddRoutesForm
+		unmarshalError := json.Unmarshal(body, &addRoutesForm)
 		if unmarshalError != nil {
 			go controller.LogError(request, errors.GoRuntimeError(unmarshalError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
@@ -57,9 +57,9 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		terminals, authSuccess, checkError := controller.ListTerminals(request, listTerminalsForm.Cookies)
-		if checkError != nil {
-			go controller.LogError(request, errors.GoRuntimeError(checkError, request.RemoteAddr, request.Method, request.RequestURI))
+		succeed, message, updateError := controller.AdminAddRoutes(request, addRoutesForm.Cookies, addRoutesForm.Routes)
+		if updateError != nil {
+			go controller.LogError(request, errors.GoRuntimeError(updateError, request.RemoteAddr, request.Method, request.RequestURI))
 			responseWriter.WriteHeader(http.StatusInternalServerError)
 			_, writeError := responseWriter.Write(messages.SomethingGoesWrong())
 			if writeError != nil {
@@ -68,13 +68,10 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 			}
 			return
 		}
-		if !authSuccess {
-			responseWriter.WriteHeader(http.StatusForbidden)
-			return
-		}
 		response, responseMarshalError := json.Marshal(
-			forms.ListTerminalsResponse{
-				Terminals: terminals,
+			forms.UpdateResponse{
+				Succeed: succeed,
+				Message: message,
 			},
 		)
 		if responseMarshalError != nil {
@@ -86,6 +83,9 @@ func ListTerminals(controller *data.Controller) http.HandlerFunc {
 				return
 			}
 			return
+		}
+		if !succeed {
+			responseWriter.WriteHeader(http.StatusForbidden)
 		}
 		responseWriter.Header().Set("content-type", content_types.Json)
 		_, responseWriteError := responseWriter.Write(response)

@@ -3,6 +3,7 @@ package data
 import (
 	"github.com/shoriwe/metrolinea/internal/api/forms"
 	"github.com/shoriwe/metrolinea/internal/data/db_objects"
+	graph2 "github.com/shoriwe/metrolinea/internal/data/graph"
 	"github.com/shoriwe/metrolinea/internal/data/test"
 	"net/http"
 	"time"
@@ -21,6 +22,7 @@ type Callbacks interface {
 	LogAdminCreateUserAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogAdminDisableUserAttempt(request *http.Request, now time.Time, usernameOrCookies, targetUsername string, succeed bool) error
 	LogAdminAddTerminalsAttempt(request *http.Request, now time.Time, usernameOrCookies string, terminals []string, succeed bool) error
+	LogAdminAddRoutesAttempt(request *http.Request, now time.Time, usernameOrCookies string, numberOfRoutes int, succeed bool) error
 	LogListTerminalsAttempt(request *http.Request, now time.Time, usernameOrCookies string, succeed bool) error
 	LogUserExists(request *http.Request, now time.Time, username string, exists bool) error
 	LogError(request *http.Request, now time.Time, err error) error
@@ -40,7 +42,7 @@ type Callbacks interface {
 
 type Controller struct {
 	callbacks Callbacks
-	graph     *Graph
+	graph     *graph2.Graph
 }
 
 type Settings struct {
@@ -53,6 +55,6 @@ func Setup(settings Settings) (*Controller, error) {
 func TestSetup() *Controller {
 	return &Controller{
 		callbacks: test.NewCallbacks(),
-		graph:     NewGraph(),
+		graph:     graph2.NewGraph(),
 	}
 }

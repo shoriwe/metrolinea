@@ -129,6 +129,15 @@ func (c *Callbacks) LogAdminAddTerminalsAttempt(request *http.Request, _ time.Ti
 	return nil
 }
 
+func (c *Callbacks) LogAdminAddRoutesAttempt(request *http.Request, _ time.Time, usernameOrCookies string, numberOfRoutes int, succeed bool) error {
+	if succeed {
+		log.Printf("ADD %d ROUTES BY ADMIN USER %s - %s SUCCEED\n", numberOfRoutes, usernameOrCookies, request.RemoteAddr)
+	} else {
+		log.Printf("ADD %d ROUTES BY ADMIN USER %s - %s FAILED\n", numberOfRoutes, usernameOrCookies, request.RemoteAddr)
+	}
+	return nil
+}
+
 func (c *Callbacks) LogListTerminalsAttempt(request *http.Request, _ time.Time, usernameOrCookies string, succeed bool) error {
 	if succeed {
 		log.Printf("LIST TERMINALS: %s BY USER %s - %s SUCCEED\n", usernameOrCookies, request.RemoteAddr)

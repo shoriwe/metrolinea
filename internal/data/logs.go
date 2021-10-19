@@ -108,6 +108,13 @@ func (controller *Controller) LogAdminAddTerminalsAttempt(request *http.Request,
 	}
 }
 
+func (controller *Controller) LogAdminAddRoutesAttempt(request *http.Request, usernameOrCookie string, numberOfRoutes int, succeed bool) {
+	logError := controller.callbacks.LogAdminAddRoutesAttempt(request, time.Now(), usernameOrCookie, numberOfRoutes, succeed)
+	if logError != nil {
+		log.Println(logError)
+	}
+}
+
 func (controller *Controller) LogListTerminalsAttempt(request *http.Request, usernameOrCookie string, succeed bool) {
 	logError := controller.callbacks.LogListTerminalsAttempt(request, time.Now(), usernameOrCookie, succeed)
 	if logError != nil {
